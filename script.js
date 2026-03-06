@@ -367,7 +367,7 @@ class UIController {
     this.engine.onUpdate = s => this.updateUI(s);
     this.engine.onFinish = r => this.showResults(r);
     this.engine.reset();
-    document.getElementById('typing-input').focus();
+    
   }
 
   loadSettings() {
@@ -421,14 +421,19 @@ class UIController {
   }
 
   setupEventListeners() {
-    const input = document.getElementById('typing-input');
+    const container = document.getElementById('typing-container');
+    this.isFocused = true;
 
-    // Main typing handler
-    input.addEventListener('keydown', e => {
+    // Main typing handler - listen on document directly (works with OTG keyboard on mobile)
+    document.addEventListener('keydown', e => {
+      // Ignore if settings/modal is open or user is typing in a real input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+      if (!this.isFocused) return;
+
       this.sound.init();
 
       if (e.key === 'Escape') { this.engine.reset(); return; }
-      if (e.key === 'Tab') { e.preventDefault(); input.focus(); return; }
+      if (e.key === 'Tab') { e.preventDefault(); return; }
 
       if (e.key === 'Backspace') {
         e.preventDefault();
@@ -447,20 +452,22 @@ class UIController {
       }
     });
 
-    // Focus management
-    input.addEventListener('blur', () => {
-      if (!this.engine.state.isFinished) {
-        document.getElementById('focus-overlay').classList.remove('opacity-0', 'pointer-events-none');
-      }
+    // Focus management - click on container to "focus"
+    container.addEventListener('click', () => {
+      this.isFocused = true;
+      document.getElementById('focus-overlay').classList.add('opacity-0', 'pointer-events-none');
+      container.style.outline = 'none';
     });
     document.getElementById('focus-overlay').addEventListener('click', () => {
-      input.focus();
+      this.isFocused = true;
       document.getElementById('focus-overlay').classList.add('opacity-0', 'pointer-events-none');
     });
-    document.getElementById('typing-container').addEventListener('click', () => {
-      input.focus();
-      document.getElementById('focus-overlay').classList.add('opacity-0', 'pointer-events-none');
-    });
+
+    // Lose focus when clicking settings/modals
+    document.getElementById('settings-btn').addEventListener('mousedown', () => { this.isFocused = false; });
+    document.getElementById('history-btn').addEventListener('mousedown', () => { this.isFocused = false; });
+    document.getElementById('settings-drawer').addEventListener('mousedown', () => { this.isFocused = false; });
+
 
     // Mode buttons
     document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -468,7 +475,7 @@ class UIController {
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.engine.reset(btn.dataset.mode);
-        input.focus();
+        this.isFocused = true;
       });
     });
 
@@ -482,13 +489,14 @@ class UIController {
             btn.classList.add('active');
             btn.textContent = val + 's';
             this.engine.reset(null, val);
+            this.isFocused = true;
           }
           return;
         }
         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.engine.reset(null, parseInt(btn.dataset.time));
-        input.focus();
+        this.isFocused = true;
       });
     });
 
@@ -498,6 +506,7 @@ class UIController {
     });
     document.getElementById('close-settings-btn').addEventListener('click', () => {
       document.getElementById('settings-drawer').classList.add('translate-x-full');
+      this.isFocused = true;
     });
 
     // Sound
@@ -571,7 +580,7 @@ class UIController {
         this.engine.state.text = text;
         this.engine.reset('custom');
         document.getElementById('settings-drawer').classList.add('translate-x-full');
-        input.focus();
+        
       }
     });
 
@@ -588,10 +597,11 @@ class UIController {
     document.getElementById('restart-btn').addEventListener('click', () => {
       document.getElementById('results-modal').classList.add('hidden', 'opacity-0');
       this.engine.reset();
-      input.focus();
+      this.isFocused = true;
     });
     document.getElementById('close-results-btn').addEventListener('click', () => {
       document.getElementById('results-modal').classList.add('hidden', 'opacity-0');
+      this.isFocused = true;
     });
 
     // Share
