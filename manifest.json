@@ -1,21 +1,13 @@
 {
   "name": "TypingFlow",
   "short_name": "TypingFlow",
-  "description": "Advanced Typing Practice Web App",
-  "start_url": "/",
+  "description": "Pro Typing Practice App",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#10b981",
+  "background_color": "#0a0a0f",
+  "theme_color": "#00ff87",
   "icons": [
-    {
-      "src": "https://picsum.photos/seed/typing/192/192",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://picsum.photos/seed/typing/512/512",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "https://picsum.photos/seed/typingflow/192/192", "sizes": "192x192", "type": "image/png" },
+    { "src": "https://picsum.photos/seed/typingflow/512/512", "sizes": "512x512", "type": "image/png" }
   ]
 }

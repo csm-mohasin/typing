@@ -1,54 +1,38 @@
-const CACHE_NAME = 'typingflow-v2';
+const CACHE = 'typingflow-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/script.js',
-  '/style.css',
-  '/manifest.json',
+  './',
+  './index.html',
+  './script.js',
+  './style.css',
+  './manifest.json',
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/lucide@latest/dist/umd/lucide.js',
   'https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js',
   'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap'
 ];
 
-// Install - cache all assets
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
-  );
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
-// Activate - delete old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      )
-    )
-  );
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys =>
+    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+  ));
   self.clients.claim();
 });
 
-// Fetch - cache first, then network
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((response) => {
-        // Cache new requests dynamically
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        return response;
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      return cached || fetch(e.request).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return res;
       });
     }).catch(() => {
-      // Offline fallback for HTML pages
-      if (event.request.destination === 'document') {
-        return caches.match('/index.html');
-      }
+      if (e.request.destination === 'document') return caches.match('./index.html');
     })
   );
 });

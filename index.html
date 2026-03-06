@@ -2,299 +2,394 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TypingFlow | Advanced Typing Practice</title>
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#10b981" />
-    <link rel="apple-touch-icon" href="https://picsum.photos/seed/typing/192/192" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>TypingFlow | Pro Typing Practice</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#00ff87" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="https://picsum.photos/seed/typingflow/192/192" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['"JetBrains Mono"', 'monospace'],
+              display: ['"Space Grotesk"', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
   </head>
-  <body class="bg-neutral-950 text-neutral-200 font-sans selection:bg-emerald-500/30">
-    <div id="app" class="min-h-screen flex flex-col">
-      <!-- Navigation / Header -->
-      <header class="p-6 flex justify-between items-center max-w-6xl mx-auto w-full">
+  <body class="bg-[#0a0a0f] text-neutral-200 font-display overflow-x-hidden">
+
+    <div id="app" class="min-h-screen flex flex-col max-w-5xl mx-auto px-4">
+
+      <!-- Header -->
+      <header id="main-header" class="py-4 flex justify-between items-center transition-all duration-500">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <i data-lucide="keyboard" class="w-5 h-5 text-neutral-950"></i>
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00ff87] to-[#00c6ff] flex items-center justify-center shadow-lg shadow-[#00ff87]/20">
+            <i data-lucide="keyboard" class="w-4 h-4 text-black"></i>
           </div>
-          <h1 class="text-xl font-bold tracking-tight text-neutral-100">Typing<span class="text-emerald-500">Flow</span></h1>
+          <span class="text-lg font-bold tracking-tight">Typing<span class="text-[#00ff87]">Flow</span></span>
         </div>
-        
-        <div class="flex items-center gap-4">
-          <div id="user-stats" class="hidden sm:flex items-center gap-4 text-sm font-medium text-neutral-400">
-            <div class="flex items-center gap-1">
-              <i data-lucide="zap" class="w-4 h-4 text-yellow-500"></i>
+        <div class="flex items-center gap-3">
+          <!-- User stats -->
+          <div id="user-stats" class="flex items-center gap-3 text-sm font-medium">
+            <div class="flex items-center gap-1 text-yellow-400">
+              <i data-lucide="zap" class="w-4 h-4"></i>
               <span id="streak-count">0</span>
             </div>
-            <div class="flex items-center gap-1">
-              <i data-lucide="award" class="w-4 h-4 text-emerald-500"></i>
+            <div class="flex items-center gap-1 text-[#00ff87]">
+              <i data-lucide="award" class="w-4 h-4"></i>
               <span id="user-level">Lvl 1</span>
             </div>
-            <div class="flex items-center gap-1">
-              <i data-lucide="target" class="w-4 h-4 text-blue-500"></i>
+            <div class="flex items-center gap-1 text-blue-400">
+              <i data-lucide="target" class="w-4 h-4"></i>
               <span id="daily-goal">0/5</span>
             </div>
           </div>
-          <button id="settings-btn" class="p-2 hover:bg-neutral-800 rounded-full transition-colors">
-            <i data-lucide="settings" class="w-5 h-5"></i>
+          <button id="history-btn" class="p-2 hover:bg-white/5 rounded-lg transition-colors" title="History">
+            <i data-lucide="bar-chart-2" class="w-5 h-5 text-neutral-400"></i>
+          </button>
+          <button id="settings-btn" class="p-2 hover:bg-white/5 rounded-lg transition-colors" title="Settings">
+            <i data-lucide="settings" class="w-5 h-5 text-neutral-400"></i>
           </button>
         </div>
       </header>
 
-      <main class="flex-1 flex flex-col items-center justify-center p-6 max-w-6xl mx-auto w-full gap-12">
-        <!-- Config Bar -->
-        <div id="config-bar" class="flex flex-wrap items-center justify-center gap-6 bg-neutral-900/50 backdrop-blur-md p-2 px-6 rounded-2xl border border-neutral-800/50 text-sm font-medium text-neutral-400">
-          <div class="flex items-center gap-4 border-r border-neutral-800 pr-4">
-            <button class="mode-btn active text-emerald-500" data-mode="words">words</button>
-            <button class="mode-btn" data-mode="sentences">sentences</button>
-            <button class="mode-btn" data-mode="paragraphs">paragraphs</button>
-          </div>
-          <div class="flex items-center gap-4">
-            <button class="time-btn" data-time="15">15</button>
-            <button class="time-btn active text-emerald-500" data-time="30">30</button>
-            <button class="time-btn" data-time="60">60</button>
-            <button class="time-btn" data-time="120">120</button>
-            <button class="time-btn" data-time="custom">custom</button>
+      <!-- Mode & Time Config Bar -->
+      <div id="config-bar" class="flex flex-wrap items-center justify-center gap-2 py-3 transition-all duration-500">
+        <div class="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/10">
+          <button class="mode-btn active px-3 py-1.5 rounded-lg text-sm font-semibold" data-mode="words">words</button>
+          <button class="mode-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-mode="sentences">sentences</button>
+          <button class="mode-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-mode="paragraphs">paragraphs</button>
+          <button class="mode-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-mode="numbers">numbers</button>
+          <button class="mode-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-mode="punctuation">punct.</button>
+        </div>
+        <div class="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/10">
+          <button class="time-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-time="15">15s</button>
+          <button class="time-btn active px-3 py-1.5 rounded-lg text-sm font-semibold" data-time="30">30s</button>
+          <button class="time-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-time="60">60s</button>
+          <button class="time-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-time="120">120s</button>
+          <button class="time-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-time="custom">∞</button>
+        </div>
+      </div>
+
+      <!-- Live Stats Bar -->
+      <div id="live-stats" class="flex justify-center gap-8 py-2 opacity-0 transition-opacity duration-300">
+        <div class="text-center">
+          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">WPM</div>
+          <div id="live-wpm" class="text-3xl font-bold text-[#00ff87] tabular-nums">0</div>
+        </div>
+        <div class="text-center">
+          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">RAW</div>
+          <div id="live-raw" class="text-3xl font-bold text-neutral-400 tabular-nums">0</div>
+        </div>
+        <div class="text-center relative">
+          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">TIME</div>
+          <div class="relative w-12 h-12 mx-auto flex items-center justify-center">
+            <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
+              <circle cx="24" cy="24" r="20" stroke="#1a1a2e" stroke-width="3" fill="transparent"/>
+              <circle id="timer-circle" cx="24" cy="24" r="20" stroke="#00ff87" stroke-width="3" fill="transparent"
+                stroke-dasharray="125.6" stroke-dashoffset="0" class="transition-all duration-1000"/>
+            </svg>
+            <span id="live-timer" class="text-lg font-bold tabular-nums relative z-10">30</span>
           </div>
         </div>
-
-        <!-- Live Stats -->
-        <div id="live-stats" class="flex gap-12 text-neutral-500 font-mono text-lg opacity-0 transition-opacity duration-300">
-          <div class="flex flex-col items-center">
-            <span class="text-xs uppercase tracking-widest mb-1 opacity-50">WPM</span>
-            <span id="live-wpm" class="text-emerald-500 font-bold text-2xl">0</span>
-          </div>
-          <div class="flex flex-col items-center">
-            <span class="text-xs uppercase tracking-widest mb-1 opacity-50">Accuracy</span>
-            <span id="live-accuracy" class="text-neutral-200 font-bold text-2xl">100%</span>
-          </div>
-          <div class="flex flex-col items-center relative">
-            <span class="text-xs uppercase tracking-widest mb-1 opacity-50">Time</span>
-            <div class="relative w-12 h-12 flex items-center justify-center">
-              <svg class="absolute inset-0 w-full h-full -rotate-90">
-                <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2" fill="transparent" class="text-neutral-800"></circle>
-                <circle id="timer-circle" cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2" fill="transparent" class="text-emerald-500 transition-all duration-1000" stroke-dasharray="125.6" stroke-dashoffset="0"></circle>
-              </svg>
-              <span id="live-timer" class="text-neutral-200 font-bold text-lg relative z-10">30</span>
-            </div>
-          </div>
+        <div class="text-center">
+          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">ACC</div>
+          <div id="live-accuracy" class="text-3xl font-bold text-white tabular-nums">100%</div>
         </div>
+        <div class="text-center">
+          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">ERR</div>
+          <div id="live-errors" class="text-3xl font-bold text-red-400 tabular-nums">0</div>
+        </div>
+      </div>
 
-        <!-- Typing Area -->
-        <div class="relative w-full max-w-4xl group">
-          <div id="typing-container" class="text-2xl sm:text-3xl leading-relaxed text-neutral-600 font-mono break-words select-none transition-all duration-300">
-            <!-- Words will be injected here -->
+      <!-- Main Typing Area -->
+      <main class="flex-1 flex flex-col items-center justify-center gap-6 py-4">
+
+        <!-- Caret + Text container -->
+        <div class="relative w-full group">
+          <div id="typing-container"
+            class="font-mono text-xl sm:text-2xl leading-loose text-neutral-600 break-words select-none relative min-h-[8rem] transition-all duration-300 cursor-text"
+            style="word-spacing: 0.15em;">
           </div>
-          <input type="text" id="typing-input" class="absolute inset-0 opacity-0 cursor-default" autofocus autocomplete="off" autocapitalize="off" spellcheck="false">
-          
+          <input type="text" id="typing-input"
+            class="absolute inset-0 opacity-0 cursor-default w-full h-full"
+            autofocus autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+            inputmode="none">
+
           <!-- Focus Overlay -->
-          <div id="focus-overlay" class="absolute inset-0 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 z-10">
-            <div class="flex items-center gap-2 text-neutral-400">
-              <i data-lucide="mouse-pointer-2" class="w-5 h-5 animate-bounce"></i>
-              <span>Click to focus</span>
+          <div id="focus-overlay"
+            class="absolute inset-0 flex items-center justify-center bg-[#0a0a0f]/80 backdrop-blur-sm rounded-xl opacity-0 pointer-events-none transition-opacity duration-300 z-10">
+            <div class="flex flex-col items-center gap-2 text-neutral-400">
+              <i data-lucide="mouse-pointer-click" class="w-6 h-6 animate-bounce text-[#00ff87]"></i>
+              <span class="text-sm font-medium">Tap to focus</span>
             </div>
           </div>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="w-full max-w-4xl h-1 bg-neutral-900 rounded-full overflow-hidden">
-          <div id="progress-bar" class="h-full bg-emerald-500 w-0 transition-all duration-200 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+        <!-- Progress bar -->
+        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+          <div id="progress-bar" class="h-full w-0 rounded-full transition-all duration-100"
+            style="background: linear-gradient(90deg, #00ff87, #00c6ff); box-shadow: 0 0 10px #00ff8766;"></div>
         </div>
 
-        <!-- Keyboard -->
-        <div id="visual-keyboard" class="hidden md:flex flex-col gap-2 p-4 bg-neutral-900/30 rounded-2xl border border-neutral-800/50 backdrop-blur-sm">
-          <!-- Keyboard rows will be injected here -->
+        <!-- Shortcuts -->
+        <div class="flex items-center gap-4 text-xs text-neutral-600">
+          <span><kbd class="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-neutral-400">Esc</kbd> restart</span>
+          <span><kbd class="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-neutral-400">Tab</kbd> focus</span>
+          <span><kbd class="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-neutral-400">Ctrl+Z</kbd> undo word</span>
         </div>
 
-        <!-- Shortcuts Hint -->
-        <div class="text-neutral-500 text-xs flex items-center gap-4">
-          <div class="flex items-center gap-1">
-            <kbd class="px-1.5 py-0.5 bg-neutral-800 rounded border border-neutral-700 text-neutral-300">Esc</kbd>
-            <span>- restart</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <kbd class="px-1.5 py-0.5 bg-neutral-800 rounded border border-neutral-700 text-neutral-300">Tab</kbd>
-            <span>- focus</span>
-          </div>
+        <!-- Visual Keyboard (desktop) -->
+        <div id="visual-keyboard" class="hidden lg:flex flex-col gap-1.5 p-4 bg-white/3 rounded-2xl border border-white/5 w-full max-w-2xl">
         </div>
+
       </main>
 
-      <!-- Results Modal -->
-      <div id="results-modal" class="fixed inset-0 bg-neutral-950/90 backdrop-blur-xl z-50 flex items-center justify-center p-6 hidden opacity-0 transition-opacity duration-500">
-        <div class="max-w-4xl w-full bg-neutral-900 rounded-3xl border border-neutral-800 shadow-2xl overflow-hidden flex flex-col md:flex-row">
-          <div class="p-8 md:w-2/3 flex flex-col gap-8">
-            <div class="flex justify-between items-start">
-              <div>
-                <h2 class="text-3xl font-bold text-neutral-100">Test Result</h2>
-                <p class="text-neutral-500 text-sm" id="result-date"></p>
-              </div>
-              <div class="flex gap-2">
-                <button id="share-btn" class="p-2 hover:bg-neutral-800 rounded-lg transition-colors text-neutral-400">
-                  <i data-lucide="share-2" class="w-5 h-5"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
-              <div class="flex flex-col">
-                <span class="text-xs uppercase tracking-widest text-neutral-500 mb-1">WPM</span>
-                <span id="result-wpm" class="text-4xl font-bold text-emerald-500">0</span>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs uppercase tracking-widest text-neutral-500 mb-1">Accuracy</span>
-                <span id="result-accuracy" class="text-4xl font-bold text-neutral-100">0%</span>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs uppercase tracking-widest text-neutral-500 mb-1">Errors</span>
-                <span id="result-errors" class="text-4xl font-bold text-red-500">0</span>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs uppercase tracking-widest text-neutral-500 mb-1">CPM</span>
-                <span id="result-cpm" class="text-4xl font-bold text-neutral-100">0</span>
-              </div>
-              <div class="flex flex-col">
-                <span class="text-xs uppercase tracking-widest text-neutral-500 mb-1">XP Gained</span>
-                <span id="result-xp" class="text-4xl font-bold text-yellow-500">+0</span>
-              </div>
-            </div>
-
-            <div class="h-48 w-full" id="wpm-chart-container">
-              <svg id="wpm-chart"></svg>
-            </div>
-
-            <div class="space-y-4">
-              <h3 class="text-sm font-bold text-neutral-400 uppercase tracking-widest">Local Leaderboard</h3>
-              <div id="leaderboard" class="grid grid-cols-1 gap-2">
-                <!-- Leaderboard items will be injected here -->
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-neutral-800/50 p-8 md:w-1/3 flex flex-col gap-6 border-l border-neutral-800">
-            <h3 class="font-bold text-neutral-200">Session Stats</h3>
-            <div class="space-y-4 text-sm">
-              <div class="flex justify-between">
-                <span class="text-neutral-500">Characters</span>
-                <span id="result-chars" class="text-neutral-200">0</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-neutral-500">Time</span>
-                <span id="result-time" class="text-neutral-200">0s</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-neutral-500">Personal Best</span>
-                <span id="result-pb" class="text-emerald-500">0 WPM</span>
-              </div>
-            </div>
-
-            <div class="mt-auto flex flex-col gap-3">
-              <button id="restart-btn" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
-                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                Try Again
-              </button>
-              <button id="close-results-btn" class="w-full py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-bold rounded-xl transition-all">
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Settings Drawer -->
-      <div id="settings-drawer" class="fixed inset-y-0 right-0 w-full max-w-sm bg-neutral-900 border-l border-neutral-800 z-50 translate-x-full transition-transform duration-300 p-8 flex flex-col gap-8 shadow-2xl">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-bold">Settings</h2>
-          <button id="close-settings-btn" class="p-2 hover:bg-neutral-800 rounded-full">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
-
-        <div class="space-y-8 overflow-y-auto pr-2">
-          <!-- Sound Settings -->
-          <section class="space-y-4">
-            <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Sound</h3>
-            <div class="flex items-center justify-between">
-              <span>Typing Sounds</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="sound-toggle" class="sr-only peer" checked>
-                <div class="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-              </label>
-            </div>
-            <div class="space-y-2">
-              <div class="flex justify-between text-xs text-neutral-500">
-                <span>Volume</span>
-                <span id="volume-value">50%</span>
-              </div>
-              <input type="range" id="volume-slider" min="0" max="100" value="50" class="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
-            </div>
-          </section>
-
-          <!-- Appearance -->
-          <section class="space-y-4">
-            <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Appearance</h3>
-            <div class="space-y-3">
-              <label class="block text-sm">Background Theme</label>
-              <div class="grid grid-cols-3 gap-2">
-                <button class="theme-btn h-8 rounded-lg bg-neutral-950 border border-neutral-700 active" data-theme="dark"></button>
-                <button class="theme-btn h-8 rounded-lg bg-neutral-100 border border-neutral-300" data-theme="light"></button>
-                <button class="theme-btn h-8 rounded-lg bg-emerald-950 border border-emerald-800" data-theme="emerald"></button>
-              </div>
-            </div>
-            <div class="space-y-3">
-              <label class="block text-sm">Font Family</label>
-              <select id="font-family" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-sm">
-                <option value="font-mono">JetBrains Mono</option>
-                <option value="font-sans">Inter</option>
-                <option value="font-serif">Georgia</option>
-              </select>
-            </div>
-            <div class="space-y-2">
-              <div class="flex justify-between text-xs text-neutral-500">
-                <span>Font Size</span>
-                <span id="font-size-value">24px</span>
-              </div>
-              <input type="range" id="font-size-slider" min="16" max="48" value="24" class="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-500">
-            </div>
-          </section>
-
-          <!-- Features -->
-          <section class="space-y-4">
-            <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Features</h3>
-            <div class="space-y-2">
-              <label class="block text-sm">Custom Text</label>
-              <textarea id="custom-text-input" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs h-20 resize-none" placeholder="Paste your custom text here..."></textarea>
-              <button id="apply-custom-text" class="w-full py-2 bg-neutral-800 hover:bg-neutral-700 text-xs rounded-lg transition-colors">Apply Custom Text</button>
-            </div>
-            <div class="flex items-center justify-between">
-              <span>Zen Mode</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="zen-mode-toggle" class="sr-only peer">
-                <div class="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-              </label>
-            </div>
-            <div class="flex items-center justify-between">
-              <span>Focus Mode</span>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="focus-mode-toggle" class="sr-only peer">
-                <div class="w-11 h-6 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-              </label>
-            </div>
-          </section>
-        </div>
-      </div>
-
-      <footer class="p-6 text-center text-neutral-600 text-xs border-t border-neutral-900 mt-auto">
-        <p>&copy; 2026 TypingFlow. Built with passion for speed.</p>
+      <footer id="main-footer" class="py-4 text-center text-neutral-700 text-xs border-t border-white/5 transition-all duration-500">
+        TypingFlow v2 · Built for speed · <span id="pb-footer" class="text-[#00ff87]">PB: 0 WPM</span>
       </footer>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- ===== RESULTS MODAL ===== -->
+    <div id="results-modal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-500">
+      <div class="w-full max-w-2xl bg-[#0f0f1a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+
+        <!-- Top stats -->
+        <div class="p-6 border-b border-white/5">
+          <div class="flex justify-between items-start mb-6">
+            <div>
+              <h2 class="text-2xl font-bold">Test Complete</h2>
+              <p class="text-neutral-500 text-sm" id="result-date"></p>
+            </div>
+            <div class="flex gap-2">
+              <button id="share-btn" class="p-2 hover:bg-white/5 rounded-lg transition-colors text-neutral-400" title="Copy result">
+                <i data-lucide="share-2" class="w-5 h-5"></i>
+              </button>
+              <button id="tweet-btn" class="p-2 hover:bg-white/5 rounded-lg transition-colors text-sky-400" title="Tweet">
+                <i data-lucide="twitter" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main numbers -->
+          <div class="grid grid-cols-4 gap-4 mb-4">
+            <div>
+              <div class="text-xs text-neutral-500 uppercase tracking-widest mb-1">WPM</div>
+              <div id="result-wpm" class="text-5xl font-bold text-[#00ff87] tabular-nums">0</div>
+            </div>
+            <div>
+              <div class="text-xs text-neutral-500 uppercase tracking-widest mb-1">RAW</div>
+              <div id="result-raw" class="text-5xl font-bold text-neutral-400 tabular-nums">0</div>
+            </div>
+            <div>
+              <div class="text-xs text-neutral-500 uppercase tracking-widest mb-1">ACC</div>
+              <div id="result-accuracy" class="text-5xl font-bold text-white tabular-nums">0%</div>
+            </div>
+            <div>
+              <div class="text-xs text-neutral-500 uppercase tracking-widest mb-1">ERR</div>
+              <div id="result-errors" class="text-5xl font-bold text-red-400 tabular-nums">0</div>
+            </div>
+          </div>
+
+          <!-- Secondary stats -->
+          <div class="flex flex-wrap gap-4 text-sm text-neutral-500">
+            <span>CPM: <span id="result-cpm" class="text-neutral-300 font-semibold">0</span></span>
+            <span>Chars: <span id="result-chars" class="text-neutral-300 font-semibold">0</span></span>
+            <span>Time: <span id="result-time" class="text-neutral-300 font-semibold">0s</span></span>
+            <span>XP: <span id="result-xp" class="text-yellow-400 font-semibold">+0</span></span>
+            <span>PB: <span id="result-pb" class="text-[#00ff87] font-semibold">0 WPM</span></span>
+          </div>
+        </div>
+
+        <!-- WPM Chart -->
+        <div class="p-6 border-b border-white/5">
+          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-3">WPM over time</div>
+          <div id="wpm-chart-container" class="w-full h-32">
+            <svg id="wpm-chart" class="w-full h-full"></svg>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="p-6 border-b border-white/5">
+          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-3">Personal Best — Top 5</div>
+          <div id="leaderboard" class="space-y-2"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="p-6 flex gap-3">
+          <button id="restart-btn"
+            class="flex-1 py-3 bg-[#00ff87] hover:bg-[#00e07a] text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#00ff87]/20">
+            <i data-lucide="refresh-cw" class="w-5 h-5"></i> Try Again
+          </button>
+          <button id="close-results-btn"
+            class="px-6 py-3 bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold rounded-xl transition-all border border-white/10">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HISTORY MODAL ===== -->
+    <div id="history-modal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-500">
+      <div class="w-full max-w-lg bg-[#0f0f1a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+          <h2 class="text-xl font-bold">Session History</h2>
+          <button id="close-history-btn" class="p-2 hover:bg-white/5 rounded-lg">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="p-6 max-h-[60vh] overflow-y-auto">
+          <div id="history-list" class="space-y-2"></div>
+        </div>
+        <div class="p-4 border-t border-white/5 flex justify-end">
+          <button id="clear-history-btn" class="px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 rounded-lg transition-colors">
+            Clear History
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS DRAWER ===== -->
+    <div id="settings-drawer"
+      class="fixed inset-y-0 right-0 w-full max-w-sm bg-[#0f0f1a] border-l border-white/10 z-50 translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
+      <div class="p-6 border-b border-white/5 flex justify-between items-center">
+        <h2 class="text-xl font-bold">Settings</h2>
+        <button id="close-settings-btn" class="p-2 hover:bg-white/5 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6 space-y-8">
+
+        <!-- Sound -->
+        <section class="space-y-4">
+          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Sound</h3>
+          <div class="flex items-center justify-between">
+            <span class="text-sm">Typing Sounds</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="sound-toggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs text-neutral-500">
+              <span>Volume</span><span id="volume-value">50%</span>
+            </div>
+            <input type="range" id="volume-slider" min="0" max="100" value="50" class="range-input w-full">
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm block">Sound Theme</label>
+            <select id="sound-theme" class="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm">
+              <option value="mechanical">Mechanical</option>
+              <option value="soft">Soft</option>
+              <option value="typewriter">Typewriter</option>
+              <option value="beep">Beep</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Appearance -->
+        <section class="space-y-4">
+          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Appearance</h3>
+          <div>
+            <label class="text-sm block mb-2">Color Theme</label>
+            <div class="grid grid-cols-4 gap-2">
+              <button class="theme-btn h-8 rounded-lg border-2 border-transparent active-theme" data-theme="green" style="background:#00ff87" title="Green"></button>
+              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="blue" style="background:#00c6ff" title="Blue"></button>
+              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="purple" style="background:#a855f7" title="Purple"></button>
+              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="orange" style="background:#f97316" title="Orange"></button>
+              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="pink" style="background:#ec4899" title="Pink"></button>
+              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="yellow" style="background:#eab308" title="Yellow"></button>
+              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="red" style="background:#ef4444" title="Red"></button>
+              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="white" style="background:#f5f5f5" title="White"></button>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm block mb-2">Font Size</label>
+            <div class="flex justify-between text-xs text-neutral-500 mb-1">
+              <span>Size</span><span id="font-size-value">21px</span>
+            </div>
+            <input type="range" id="font-size-slider" min="14" max="36" value="21" class="range-input w-full">
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm">Smooth Caret</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="smooth-caret-toggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Behavior -->
+        <section class="space-y-4">
+          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Behavior</h3>
+          <div class="flex items-center justify-between">
+            <span class="text-sm">Stop on Error</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="stop-on-error-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm">Blind Mode</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="blind-mode-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm">Zen Mode</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="zen-mode-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm">Show Keyboard</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="show-keyboard-toggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Custom Text -->
+        <section class="space-y-3">
+          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Custom Text</h3>
+          <textarea id="custom-text-input"
+            class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm h-24 resize-none focus:outline-none focus:border-[#00ff87]/50"
+            placeholder="Paste your own text here..."></textarea>
+          <button id="apply-custom-text"
+            class="w-full py-2 bg-[#00ff87]/10 hover:bg-[#00ff87]/20 text-[#00ff87] text-sm font-semibold rounded-xl transition-colors border border-[#00ff87]/20">
+            Apply Custom Text
+          </button>
+        </section>
+
+        <!-- Stats Reset -->
+        <section class="space-y-3">
+          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Data</h3>
+          <button id="reset-stats-btn"
+            class="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-xl transition-colors border border-red-500/20">
+            Reset All Stats
+          </button>
+        </section>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>

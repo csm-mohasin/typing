@@ -1,24 +1,142 @@
-/* Custom styles - Tailwind loaded via CDN in HTML */
+/* TypingFlow v2 - Custom Styles */
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+:root {
+  --accent: #00ff87;
+  --accent-dim: rgba(0, 255, 135, 0.15);
+  --accent-glow: rgba(0, 255, 135, 0.4);
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-neutral-950;
+* { box-sizing: border-box; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+
+/* Selection */
+::selection { background: var(--accent-dim); }
+
+/* Mode & Time Buttons */
+.mode-btn, .time-btn {
+  transition: all 0.15s ease;
+  color: #666;
+  cursor: pointer;
+}
+.mode-btn:hover, .time-btn:hover { color: #ccc; }
+.mode-btn.active, .time-btn.active {
+  background: var(--accent-dim);
+  color: var(--accent);
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-neutral-800 rounded-full hover:bg-neutral-700 transition-colors;
+/* Caret blink */
+@keyframes caret-blink {
+  0%, 100% { border-color: var(--accent); opacity: 1; }
+  50% { opacity: 0; }
+}
+.caret-char {
+  border-left: 2px solid var(--accent);
+  animation: caret-blink 1s ease-in-out infinite;
+}
+.caret-smooth {
+  animation: none !important;
+  opacity: 1 !important;
 }
 
-/* Animations */
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+/* Char states */
+.char-correct { color: #e5e5e5; }
+.char-wrong { color: #f87171; text-decoration: underline; text-decoration-color: #f87171; }
+.char-pending { color: #404050; }
+.char-extra { color: #dc2626; }
+
+/* Word error highlight */
+.word-error { background: rgba(248, 113, 113, 0.08); border-radius: 3px; }
+
+/* Toggle switch */
+.toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 999px;
+  transition: 0.3s;
+}
+.toggle-slider:before {
+  content: "";
+  position: absolute;
+  height: 18px; width: 18px;
+  left: 3px; bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+input:checked + .toggle-slider { background: var(--accent-dim); }
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+  background: var(--accent);
 }
 
-.animate-pulse-soft {
-  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+/* Range input */
+.range-input {
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.1);
+  outline: none;
+  cursor: pointer;
 }
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Visual Keyboard */
+.key {
+  height: 36px;
+  min-width: 32px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600;
+  color: #555;
+  transition: all 0.08s ease;
+  user-select: none;
+  font-family: 'JetBrains Mono', monospace;
+}
+.key.active {
+  background: var(--accent-dim) !important;
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  transform: scale(0.93);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.key-space { min-width: 160px; }
+.key-backspace, .key-enter { min-width: 64px; }
+
+/* Theme active indicator */
+.theme-btn.active-theme { border-color: white !important; box-shadow: 0 0 0 3px rgba(255,255,255,0.2); }
+
+/* Fade in animation */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn 0.3s ease forwards; }
+
+/* Pulse for new PB */
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 20px 4px var(--accent-glow); }
+}
+.new-pb { animation: pulse-green 1s ease 3; }
+
+/* Smooth scroll for typing area */
+#typing-container { scroll-behavior: smooth; }
+
+/* Mobile tap highlight remove */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Prevent zoom on input focus (iOS) */
+input, select, textarea { font-size: 16px; }
