@@ -662,14 +662,14 @@ class UIController {
       return `<span class="${cls}">${display}</span>`;
     }).join('');
 
-    // Scroll current char into view
+    // Scroll active line into view within container (3-line window)
     const caretEl = container.querySelector('.caret-char');
     if (caretEl) {
-      const containerRect = container.getBoundingClientRect();
-      const caretRect = caretEl.getBoundingClientRect();
-      if (caretRect.bottom > containerRect.bottom - 30 || caretRect.top < containerRect.top) {
-        caretEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }
+      const caretTop = caretEl.offsetTop;
+      const lineHeight = caretEl.offsetHeight || 36;
+      // Keep caret on the second line (scroll offset)
+      const targetScroll = Math.max(0, caretTop - lineHeight);
+      container.scrollTop = targetScroll;
     }
 
     // Live stats

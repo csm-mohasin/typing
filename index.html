@@ -119,15 +119,17 @@
       <main class="flex-1 flex flex-col items-center justify-center gap-6 py-4">
 
         <!-- Caret + Text container -->
-        <div class="relative w-full group">
-          <div id="typing-container"
-            class="font-mono text-xl sm:text-2xl leading-loose text-neutral-600 break-words select-none relative min-h-[8rem] transition-all duration-300 cursor-text"
-            style="word-spacing: 0.15em;">
-          </div>
+        <div class="relative w-full group" style="height:168px;">
+          <!-- Input overlay - covers container area, captures keyboard events -->
           <input type="text" id="typing-input"
-            class="absolute inset-0 opacity-0 cursor-default w-full h-full"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:5; cursor:default;"
             autofocus autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
             inputmode="none">
+
+          <div id="typing-container"
+            class="font-mono text-xl sm:text-2xl leading-loose text-neutral-600 break-words select-none cursor-text"
+            style="word-spacing:0.15em; height:168px; overflow:hidden; position:relative; z-index:1;">
+          </div>
 
           <!-- Focus Overlay -->
           <div id="focus-overlay"

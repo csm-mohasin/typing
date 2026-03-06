@@ -133,7 +133,10 @@ input:checked + .toggle-slider:before {
 .new-pb { animation: pulse-green 1s ease 3; }
 
 /* Smooth scroll for typing area */
-#typing-container { scroll-behavior: smooth; }
+#typing-container {
+  overflow: hidden;
+  transition: none;
+}
 
 /* Mobile tap highlight remove */
 * { -webkit-tap-highlight-color: transparent; }
