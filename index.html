@@ -5,211 +5,305 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Typing Exam</title>
 <style>
-:root{--bg:#fff;--tx:#222;--mut:#9a9a9a;--ok:#1a7cf6;--bad:#e5484d;--line:#e3e3e3;--f0:#1a7cf6;--f1:#7cb52a;--f2:#f0a800;--f3:#f0494a}
+:root{--bg:#fff;--tx:#222;--mut:#9a9a9a;--ok:#1a7cf6;--bad:#e5484d;--line:#e3e3e3;--card:#f6f7f9;--f0:#1a7cf6;--f1:#7cb52a;--f2:#f0a800;--f3:#f0494a;--fs:34px}
+[data-theme=dark]{--bg:#16181d;--tx:#e8e8e8;--mut:#6d7480;--line:#2c3038;--card:#1f2229}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,"Noto Sans Bengali",sans-serif;background:var(--bg);color:var(--tx)}
-header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}
-header b{flex:1}
-button,select,input{font:inherit}
-.btn{background:var(--ok);color:#fff;border:0;border-radius:8px;padding:10px 20px;cursor:pointer}
-.btn.ghost{background:#eee;color:#222}
-.wrap{max-width:900px;margin:0 auto;padding:16px}
-.panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0}
-label{display:block;font-size:13px;color:#555;margin-bottom:4px}
-select,input[type=text],input[type=number]{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px}
-#text{font:34px/2.1 ui-monospace,Consolas,monospace;color:var(--mut);margin:20px 0;border-bottom:1px solid #bbb;min-height:200px;word-break:break-word}
-#text span.ok{color:#222}
-#text span.bad{color:var(--bad);background:#fde7e8}
-#text span.cur{border-bottom:3px solid var(--ok);color:#222}
-#bar{display:flex;gap:24px;font-size:15px;color:#555}
-#bar b{color:#222;font-size:20px}
-#kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin:20px auto;user-select:none}
-.row{display:flex;gap:6px}
-.k{width:48px;height:48px;border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;cursor:default;transition:opacity .1s,transform .05s}
-.k.off{opacity:.3}
-.k.next{outline:4px solid #222;opacity:1}
-.k.hit{transform:scale(.88)}
-.k.sel{outline:3px solid #222}
-#kb.pick .k{cursor:pointer}
-.sp{width:300px;background:#ddd;color:#999}
-#res{text-align:center;padding:30px;display:none}
-#res h2{font-size:56px;margin:0}
+button,select,input{font:inherit;color:inherit}
+header{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+header .t{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
+.ib{background:none;border:0;font-size:20px;cursor:pointer;padding:6px 8px;border-radius:8px}
+.ib:hover{background:var(--card)}
+.btn{background:var(--ok);color:#fff;border:0;border-radius:8px;padding:10px 18px;cursor:pointer}
+.btn.ghost{background:var(--card);color:var(--tx)}
+.wrap{max-width:920px;margin:0 auto;padding:14px}
 .hidden{display:none!important}
+.panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:12px 0}
+label{display:block;font-size:13px;opacity:.7;margin-bottom:4px}
+select,input[type=text],input[type=number]{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+#drawer{position:fixed;inset:0 auto 0 0;width:240px;background:var(--bg);border-right:1px solid var(--line);padding:14px;transform:translateX(-105%);transition:transform .2s;z-index:20;display:flex;flex-direction:column;gap:6px}
+#drawer.open{transform:none}
+#drawer button{text-align:left;background:none;border:0;padding:12px;border-radius:8px;cursor:pointer;font-size:16px}
+#drawer button:hover{background:var(--card)}
+#shade{position:fixed;inset:0;background:#0006;z-index:15}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.card{background:var(--card);border-radius:12px;padding:14px;cursor:pointer;border:2px solid transparent}
+.card:hover{border-color:var(--ok)}
+.card small{opacity:.6}.card .st{color:#f0a800;letter-spacing:2px;margin-top:6px}
+#box{position:relative;height:calc(var(--fs)*2.1*3);overflow:hidden;margin:16px 0;border-bottom:1px solid #bbb}
+#text{font:var(--fs)/2.1 ui-monospace,Consolas,monospace;color:var(--mut);word-break:break-word;position:relative}
+#text span.ok{color:var(--tx)}
+#text span.bad{color:var(--bad);background:#e5484d22}
+#text span.cur{border-bottom:3px solid var(--ok);color:var(--tx)}
+#bar{display:flex;gap:22px;align-items:center;font-size:14px;opacity:.9}
+#bar b{font-size:20px}
+#kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin:16px auto;user-select:none}
+.row{display:flex;gap:6px}
+.k{width:46px;height:46px;border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;transition:opacity .1s,transform .05s}
+.k.off{opacity:.28}.k.next{outline:4px solid var(--tx);opacity:1}.k.hit{transform:scale(.88)}.k.sel{outline:3px solid var(--tx)}
+#kb.pick .k{cursor:pointer}
+.sp{width:290px;background:#bbb;color:#666}
+#fing{text-align:center;opacity:.7;min-height:22px}
+#garea{position:relative;height:330px;border:2px dashed var(--line);border-radius:12px;overflow:hidden;margin:16px 0;background:var(--card)}
+#garea .w{position:absolute;font:22px ui-monospace,Consolas,monospace;padding:4px 10px;background:var(--bg);border-radius:20px;border:2px solid var(--ok);white-space:nowrap}
+#garea .w b{color:var(--ok)}#garea .w.cur{background:#1a7cf622}
+#ginfo{position:absolute;top:8px;left:12px;right:12px;display:flex;justify-content:space-between;font-weight:600;z-index:2}
+#gmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;background:#0004;color:#fff;z-index:3}
+#res{text-align:center;padding:24px}
+#res h2{font-size:54px;margin:0}
+#stars{font-size:46px;color:#f0a800}
+.modal{position:fixed;inset:0;background:#0007;z-index:30;display:flex;align-items:center;justify-content:center;padding:14px}
+.modal>div{background:var(--bg);border-radius:14px;padding:18px;width:100%;max-width:480px;max-height:90vh;overflow:auto}
+.modal .r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.modal .r input[type=number],.modal .r select{width:110px}
+table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
 </style>
 </head>
 <body>
-<header><b>Typing Exam</b><button class="btn ghost" id="mus">🎵 গান: Off</button><button class="btn ghost" id="shr">🔗 Link</button></header>
+<header>
+  <button class="ib" id="menuB">☰</button>
+  <div class="t" id="ttl">Typing Exam</div>
+  <button class="ib" id="rst" title="Restart">↻</button>
+  <button class="ib" id="kbT" title="Keyboard">⌨</button>
+  <button class="ib" id="sndT" title="Sound">🔊</button>
+  <button class="ib" id="mus" title="Music">🎵</button>
+  <button class="ib" id="shr" title="Link">🔗</button>
+  <button class="ib" id="setB" title="Settings">⚙</button>
+</header>
+<div id="shade" class="hidden"></div>
+<nav id="drawer">
+  <button data-v="lessons">📚 Lessons</button>
+  <button data-v="custom">🎯 Custom exam</button>
+  <button data-v="hist">📊 History</button>
+  <button data-v="set">⚙ Settings</button>
+</nav>
+
 <div class="wrap">
+  <section id="v-lessons" class="view"><h3>Lessons</h3><div class="grid" id="lgrid"></div></section>
 
-<section id="setup">
-  <p>নিচের কিবোর্ডে যে অক্ষরগুলো দিয়ে exam দিতে চাও সেগুলোতে ক্লিক করো (অথবা নিচের box-এ লেখো)।</p>
-  <div class="panel">
-    <div><label>অক্ষর (letters)</label><input type="text" id="letters" placeholder="asdfghjkl"></div>
-    <div><label>Level</label>
-      <select id="level">
-        <option value="random">Random</option><option value="short">Short</option><option value="easy">Easy</option>
-        <option value="normal" selected>Normal</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="toohard">Too Hard</option>
-      </select></div>
-    <div><label>শব্দ সংখ্যা</label><input type="number" id="count" value="30" min="5" max="300"></div>
-    <div><label>সময় (সেকেন্ড, 0 = সময় সীমা নেই)</label><input type="number" id="time" value="0" min="0" step="15"></div>
-    <div><label>গান</label>
-      <select id="song"><option value="off">বন্ধ</option><option value="lofi">Lofi</option><option value="chill">Chill</option><option value="fast">Fast beat</option></select></div>
-    <div><label>নিজের গান (mp3 link, ঐচ্ছিক)</label><input type="text" id="songurl" placeholder="https://..."></div>
-  </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button class="btn" id="start">START TYPING</button>
-    <button class="btn ghost" id="all">সব অক্ষর</button>
-    <button class="btn ghost" id="home">Home row</button>
-    <button class="btn ghost" id="clr">মুছো</button>
-  </div>
-</section>
+  <section id="v-custom" class="view hidden">
+    <h3>Custom exam</h3>
+    <p style="opacity:.7">কিবোর্ডে অক্ষরে ক্লিক করো, অথবা নিচের box-এ লেখো।</p>
+    <div class="panel">
+      <div><label>অক্ষর</label><input type="text" id="letters" placeholder="asdfghjkl"></div>
+      <div><label>Level</label><select id="level"><option value="random">Random</option><option value="short">Short</option><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="toohard">Too Hard</option></select></div>
+      <div><label>শব্দ সংখ্যা</label><input type="number" id="count" value="30" min="5" max="300"></div>
+      <div><label>সময় (সেকেন্ড, 0 = সীমা নেই)</label><input type="number" id="time" value="0" min="0" step="15"></div>
+      <div><label>Mini game প্রতি কত শব্দ পর (0 = বন্ধ)</label><input type="number" id="game" value="0" min="0"></div>
+      <div><label>ভুল হলে</label><select id="mode"><option value="strict">সঠিক key না চাপলে এগোবে না</option><option value="free">এগিয়ে যাবে, Backspace দিয়ে ঠিক করো</option></select></div>
+      <div><label>গান</label><select id="song"><option value="off">বন্ধ</option><option value="lofi">Lofi</option><option value="chill">Chill</option><option value="fast">Fast beat</option></select></div>
+      <div><label>নিজের গান (mp3 link)</label><input type="text" id="songurl" placeholder="https://..."></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="start">START TYPING</button>
+      <button class="btn ghost" id="all">সব অক্ষর</button>
+      <button class="btn ghost" id="home">Home row</button>
+      <button class="btn ghost" id="clr">মুছো</button>
+    </div>
+  </section>
 
-<section id="play" class="hidden">
-  <div id="bar"><div>Time <b id="tm">0</b></div><div>WPM <b id="wp">0</b></div><div>Accuracy <b id="ac">100%</b></div><button class="btn ghost" id="stop" style="margin-left:auto">বন্ধ</button></div>
-  <div id="text"></div>
-</section>
+  <section id="v-hist" class="view hidden"><h3>History</h3><p id="best"></p><div id="hlist"></div><button class="btn ghost" id="hclr" style="margin-top:10px">History মুছো</button></section>
 
-<div id="kb"></div>
+  <section id="play" class="hidden">
+    <div id="bar"><div>Time <b id="tm">0</b></div><div>WPM <b id="wp">0</b></div><div>Accuracy <b id="ac">100%</b></div><div>Progress <b id="pg">0%</b></div><button class="btn ghost" id="stop" style="margin-left:auto">বন্ধ</button></div>
+    <div id="box"><div id="text"></div></div>
+    <div id="garea" class="hidden"><div id="ginfo"><span id="gs">Score 0</span><span id="gt"></span><span id="gl"></span></div><div id="gmsg" class="hidden"></div></div>
+  </section>
 
-<section id="res">
-  <h2 id="rw"></h2><p id="rd"></p>
-  <button class="btn" id="again">আবার দাও</button> <button class="btn ghost" id="back">Setup-এ ফিরো</button>
-</section>
+  <div id="kb" class="hidden"></div>
+  <div id="fing"></div>
+
+  <section id="res" class="hidden">
+    <div id="stars"></div><h2 id="rw"></h2><p id="rd"></p><p id="rp"></p>
+    <button class="btn" id="again">আবার</button> <button class="btn" id="next">পরের Lesson</button> <button class="btn ghost" id="back">Menu</button>
+  </section>
 </div>
 
+<div class="modal hidden" id="set"><div>
+  <h3 style="margin-top:0">Settings</h3>
+  <div class="r"><span>Sound effect</span><input type="checkbox" id="s-sound"></div>
+  <div class="r"><span>Volume</span><input type="range" id="s-vol" min="0" max="1" step=".1"></div>
+  <div class="r"><span>Keyboard দেখাও</span><input type="checkbox" id="s-kb"></div>
+  <div class="r"><span>আঙুল hint</span><input type="checkbox" id="s-hint"></div>
+  <div class="r"><span>ভুল হলে (Lesson)</span><select id="s-mode"><option value="strict">এগোবে না</option><option value="free">এগোবে (Backspace)</option></select></div>
+  <div class="r"><span>লেখার সাইজ</span><input type="range" id="s-font" min="22" max="52"></div>
+  <div class="r"><span>Theme</span><select id="s-theme"><option value="light">Light</option><option value="dark">Dark</option></select></div>
+  <div class="r"><span>পাস WPM</span><input type="number" id="s-gwpm" min="1"></div>
+  <div class="r"><span>পাস Accuracy %</span><input type="number" id="s-gacc" min="1" max="100"></div>
+  <div class="r"><span>Mini game প্রতি কত শব্দ (0 = বন্ধ)</span><input type="number" id="s-game" min="0"></div>
+  <div class="r"><span>Game সময় (সেকেন্ড)</span><input type="number" id="s-glen" min="5" max="60"></div>
+  <button class="btn" id="setX" style="margin-top:12px">বন্ধ করো</button>
+</div></div>
+
 <script>
-/* ---------- data ---------- */
-const WORDS=`a an as at be by do go he if in is it me my no of on or so to up us we the and are but can day did for get has her him his how its let may new not now old one our out put say see she too two use was way who why you yes year yard yellow already early require liquid lady joy yield risk sheaf qualify sir quick quiet queen quite quote square quest equal after again also been come could each even find first give good great hand have here high home just keep kind know large last late left life like line little long look made make many more most move much must name need next only open over part place plant point right same school seem show small some sound still such take tell than that them then there these they thing think this those three through time turn under until very want water well were what when where which while will with word work would write about above across against almost along always animal answer around ask asked before began begin being below between black bring build carry change close cold country cover cross dark dream drive during earth enough every example face fall family father feel field fire follow food form found friend girl green ground group grow happy heard heart heavy horse house idea island learn leave letter light listen mother mountain music never night number paper people picture plain power problem question quarter quickly quarrel quality quiz quilt queue rain read river round second sentence should simple sleep spring story strong study summer system table together toward travel visit watch whole window winter without wonder world young yesterday yawn yarn yolk yoga yeast yak jazz jump jelly jacket jungle just judge joke jar jet kid king kite knee knife knock lamp land laugh lemon lunch magic market mirror monkey nature needle noise ocean orange pencil pocket pretty rabbit rocket safe salad shadow silver smile snack soccer tiger turtle uncle valley velvet wagon zebra zero`.split(/\s+/);
+const $=id=>document.getElementById(id);
+const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const S=Object.assign({sound:true,vol:.8,kb:true,hint:true,mode:"strict",font:34,theme:"light",gwpm:15,gacc:90,game:0,glen:20},LS.get("tx_s",{}));
+let HIST=LS.get("tx_h",[]),PROG=LS.get("tx_p",{});
+const WORDS=`a an as at be by do go he if in is it me my no of on or so to up us we the and are but can day did for get has her him his how its let may new not now old one our out put say see she too two use was way who why you yes year yard yellow already early require liquid lady joy yield risk sheaf qualify sir quick quiet queen quite quote square quest equal after again also been come could each even find first give good great hand have here high home just keep kind know large last late left life like line little long look made make many more most move much must name need next only open over part place plant point right same school seem show small some sound still such take tell than that them then there these they thing think this those three through time turn under until very want water well were what when where which while will with word work would write about above across against almost along always animal answer around ask asked before began begin being below between black bring build carry change close cold country cover cross dark dream drive during earth enough every example face fall family father feel field fire follow food form found friend girl green ground group grow happy heard heart heavy horse house idea island learn leave letter light listen mother mountain music never night number paper people picture plain power problem question quarter quickly quarrel quality quiz quilt queue rain read river round second sentence should simple sleep spring story strong study summer system table together toward travel visit watch whole window winter without wonder world young yesterday yawn yarn yolk yoga yeast yak jazz jump jelly jacket jungle judge joke jar jet kid king kite knee knife knock lamp land laugh lemon lunch magic market mirror monkey nature needle noise ocean orange pencil pocket pretty rabbit rocket safe salad shadow silver smile snack soccer tiger turtle uncle valley velvet wagon zebra zero flag fish fall dash sad lad ask glass flask shall alas gaff half hall salsa`.split(/\s+/);
 const LV={random:[1,12],short:[2,3],easy:[3,4],normal:[4,5],medium:[5,6],hard:[6,8],toohard:[8,14]};
+const LESSONS=["fj","dk","sl","asdfjkl","gh","asdfghjkl","ei","ru","ty","op","qw","vm","bn","cxz","abcdefghijklmnopqrstuvwxyz"].map((l,i)=>({letters:l,level:i==14?"hard":"normal"}));
+LESSONS.splice(10,0,{letters:"qy",level:"normal"}); // Lesson 11: q & y
+const PRESETS={"2943.play":{letters:"qy",level:"normal",count:30}};
 const ROWS=["`1234567890-=","qwertyuiop[]","asdfghjkl;'","zxcvbnm,./"];
 const FING=[[0,0,1,2,3,3,3,3,2,1,0,0,0],[0,1,2,3,3,3,3,2,1,0,0,0],[0,1,2,3,3,3,3,2,1,0,0],[0,1,2,3,3,3,3,2,1,0]];
-const COL=["var(--f0)","var(--f1)","var(--f2)","var(--f3)"];
-const SEL=new Set();
-const $=id=>document.getElementById(id);
-const PRESETS={"2943.play":{letters:"qy",level:"normal",count:30}};
+const COL=["var(--f0)","var(--f1)","var(--f2)","var(--f3)"],FN=["কনিষ্ঠা","অনামিকা","মধ্যমা","তর্জনী"];
+const SEL=new Set(),keys={},finger={};
+let mode="idle",view="lessons",cfg={},lastCfg=null;
+
+/* ---------- storage / settings ---------- */
+function applyS(){document.body.dataset.theme=S.theme;document.documentElement.style.setProperty("--fs",S.font+"px");$("sndT").textContent=S.sound?"🔊":"🔇";showKb()}
+function saveS(){LS.set("tx_s",S)}
+const SF={"s-sound":["sound","c"],"s-vol":["vol","n"],"s-kb":["kb","c"],"s-hint":["hint","c"],"s-mode":["mode","s"],"s-font":["font","n"],"s-theme":["theme","s"],"s-gwpm":["gwpm","n"],"s-gacc":["gacc","n"],"s-game":["game","n"],"s-glen":["glen","n"]};
+for(const id in SF){const [k,t]=SF[id],el=$(id);if(t=="c")el.checked=S[k];else el.value=S[k];
+  el.onchange=el.oninput=()=>{S[k]=t=="c"?el.checked:t=="n"?+el.value:el.value;saveS();applyS()}}
+$("setB").onclick=()=>$("set").classList.remove("hidden");$("setX").onclick=()=>$("set").classList.add("hidden");
+$("sndT").onclick=()=>{S.sound=!S.sound;$("s-sound").checked=S.sound;saveS();applyS()};
+$("kbT").onclick=()=>{S.kb=!S.kb;$("s-kb").checked=S.kb;saveS();showKb()};
 
 /* ---------- keyboard ---------- */
-const kb=$("kb"),keys={};
+const kb=$("kb");
 ROWS.forEach((r,i)=>{const d=document.createElement("div");d.className="row";
-  [...r].forEach((c,j)=>{const k=document.createElement("div");k.className="k";k.textContent=c;k.style.background=COL[FING[i][j]];keys[c]=k;d.appendChild(k);
-    k.onclick=()=>{if(!kb.classList.contains("pick"))return;if(!/[a-z]/.test(c))return;SEL.has(c)?SEL.delete(c):SEL.add(c);sync()}});
+  [...r].forEach((c,j)=>{const k=document.createElement("div");k.className="k";k.textContent=c;k.style.background=COL[FING[i][j]];keys[c]=k;
+    finger[c]=(j<=(i==0?5:4)?"বাম":"ডান")+" হাতের "+FN[FING[i][j]];d.appendChild(k);
+    k.onclick=()=>{if(!kb.classList.contains("pick")||!/[a-z]/.test(c))return;SEL.has(c)?SEL.delete(c):SEL.add(c);$("letters").value=[...SEL].sort().join("");paint()}});
   kb.appendChild(d)});
-const sp=document.createElement("div");sp.className="row";const s=document.createElement("div");s.className="k sp";s.textContent="space";keys[" "]=s;sp.appendChild(s);kb.appendChild(sp);
-kb.classList.add("pick");
-function sync(){ $("letters").value=[...SEL].sort().join("");paint()}
-function paint(){for(const c in keys){const k=keys[c];k.classList.toggle("sel",kb.classList.contains("pick")&&SEL.has(c));k.classList.toggle("off",/[a-z]/.test(c)&&SEL.size>0&&!SEL.has(c))}}
+{const d=document.createElement("div");d.className="row";const s=document.createElement("div");s.className="k sp";s.textContent="space";keys[" "]=s;finger[" "]="বুড়ো আঙুল";d.appendChild(s);kb.appendChild(d)}
+function paint(){for(const c in keys){const k=keys[c],pick=kb.classList.contains("pick");k.classList.remove("next");k.classList.toggle("sel",pick&&SEL.has(c));k.classList.toggle("off",/[a-z]/.test(c)&&SEL.size>0&&!SEL.has(c)&&!pick)}}
+function showKb(){const play=!$("play").classList.contains("hidden"),pick=kb.classList.contains("pick");kb.classList.toggle("hidden",!((play&&S.kb)||pick));$("fing").classList.toggle("hidden",!(play&&S.hint))}
 $("letters").oninput=e=>{SEL.clear();[...e.target.value.toLowerCase()].forEach(c=>/[a-z]/.test(c)&&SEL.add(c));paint()};
-$("all").onclick=()=>{"abcdefghijklmnopqrstuvwxyz".split("").forEach(c=>SEL.add(c));sync()};
-$("home").onclick=()=>{SEL.clear();[..."asdfghjkl"].forEach(c=>SEL.add(c));sync()};
-$("clr").onclick=()=>{SEL.clear();sync()};
+const setL=s=>{SEL.clear();[...s].forEach(c=>SEL.add(c));$("letters").value=[...SEL].sort().join("");paint()};
+$("all").onclick=()=>setL("abcdefghijklmnopqrstuvwxyz");$("home").onclick=()=>setL("asdfghjkl");$("clr").onclick=()=>setL("");
 
-/* ---------- word generation ---------- */
+/* ---------- words ---------- */
 const V="aeiou",rnd=a=>a[Math.random()*a.length|0];
-function pseudo(set,len){const vs=set.filter(c=>V.includes(c)),cs=set.filter(c=>!V.includes(c));let w="";
-  for(let i=0;i<len;i++){w+=(vs.length&&cs.length)?(i%2?rnd(vs):rnd(cs)):rnd(set)}return w}
-function makeWords(set,level,n){
-  const [lo,hi]=LV[level];const ok=w=>w.length>=lo&&w.length<=hi&&(!set.length||[...w].every(c=>set.includes(c)));
-  let pool=[...new Set(WORDS)].filter(ok);const out=[];
-  const all=set.length?set:"abcdefghijklmnopqrstuvwxyz".split("");
-  for(let i=0;i<n;i++){
-    if(pool.length>=6&&Math.random()<.85)out.push(rnd(pool));
-    else out.push(pseudo(all,lo+Math.floor(Math.random()*(hi-lo+1))))}
+function pseudo(set,len){const vs=set.filter(c=>V.includes(c)),cs=set.filter(c=>!V.includes(c));let w="";for(let i=0;i<len;i++)w+=(vs.length&&cs.length)?(i%2?rnd(vs):rnd(cs)):rnd(set);return w}
+function makeWords(set,level,n){const [lo,hi]=LV[level]||LV.normal;
+  const pool=[...new Set(WORDS)].filter(w=>w.length>=lo&&w.length<=hi&&(!set.length||[...w].every(c=>set.includes(c))));
+  const all=set.length?set:"abcdefghijklmnopqrstuvwxyz".split(""),out=[];
+  for(let i=0;i<n;i++)out.push(pool.length>=6&&Math.random()<.85?rnd(pool):pseudo(all,lo+Math.floor(Math.random()*(hi-lo+1))));
   return out.join(" ")}
 
-/* ---------- audio ---------- */
-let ac,mTimer,audioEl,mOn=false;
+/* ---------- audio (offline WebAudio) ---------- */
+let ac,mTimer,audioEl,mOn=false,noiseBuf;
+const ctx=()=>ac||(ac=new(window.AudioContext||window.webkitAudioContext)());
+function tone(f,d,t,v){const c=ctx(),o=c.createOscillator(),g=c.createGain();o.type=t;o.frequency.value=f;g.gain.value=v*S.vol;g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+d)}
+function noise(d,freq,v){const c=ctx();if(!noiseBuf){noiseBuf=c.createBuffer(1,c.sampleRate*.1,c.sampleRate);const a=noiseBuf.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1}
+  const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=noiseBuf;f.type="bandpass";f.frequency.value=freq;g.gain.setValueAtTime(v*S.vol,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);s.connect(f).connect(g).connect(c.destination);s.start();s.stop(c.currentTime+d)}
+function slide(f1,f2,d,type,v){const c=ctx(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime;o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v*S.vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(c.destination);o.start();o.stop(t+d)}
+const SFX={ok(){noise(.05,2200+Math.random()*400,.5);slide(180,90,.06,"sine",.25)},bad(){slide(180,110,.18,"sawtooth",.12);slide(170,100,.18,"square",.06)},back(){slide(700,300,.09,"triangle",.15);noise(.04,900,.2)},
+  pop(){slide(500,1100,.12,"sine",.25);noise(.06,3000,.3)},win(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.25,"triangle",.2),i*110))}};
+function sfx(n){if(!S.sound)return;try{ctx().state==="suspended"&&ctx().resume();SFX[n]()}catch(e){}}
 const SONGS={lofi:{bpm:70,n:[220,261.6,329.6,392,329.6,261.6],t:"triangle"},chill:{bpm:90,n:[196,246.9,293.7,392,293.7,246.9,196],t:"sine"},fast:{bpm:140,n:[261.6,329.6,392,523.3,392,329.6],t:"square"}};
-function ctx(){return ac||(ac=new(window.AudioContext||window.webkitAudioContext)())}
-function tone(f,d,t,v){const c=ctx(),o=c.createOscillator(),g=c.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+d)}
-function musicStart(){musicStop();const url=$("songurl").value.trim(),sg=$("song").value;
+function musicStart(song,url){musicStop();
   if(url){audioEl=new Audio(url);audioEl.loop=true;audioEl.play().catch(()=>{});mOn=true}
-  else if(sg!=="off"){const S=SONGS[sg];let i=0;mTimer=setInterval(()=>{tone(S.n[i%S.n.length],.6,S.t,.05);if(i%3==0)tone(S.n[0]/2,.9,"sine",.06);i++},60000/S.bpm/2);mOn=true}
-  $("mus").textContent="🎵 গান: "+(mOn?"On":"Off")}
-function musicStop(){clearInterval(mTimer);if(audioEl){audioEl.pause();audioEl=null}mOn=false;$("mus").textContent="🎵 গান: Off"}
-$("mus").onclick=()=>mOn?musicStop():musicStart();
-/* ---------- typing sounds (WebAudio, offline) ---------- */
-let noiseBuf;
-function noise(d,freq,v){const c=ctx();
-  if(!noiseBuf){noiseBuf=c.createBuffer(1,c.sampleRate*.1,c.sampleRate);const a=noiseBuf.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1}
-  const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();
-  s.buffer=noiseBuf;f.type="bandpass";f.frequency.value=freq;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);
-  s.connect(f).connect(g).connect(c.destination);s.start();s.stop(c.currentTime+d)}
-function slide(f1,f2,d,type,v){const c=ctx(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime;
-  o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+d);
-  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(c.destination);o.start();o.stop(t+d)}
-const SFX={
-  ok(){noise(.05,2200+Math.random()*400,.5);slide(180,90,.06,"sine",.25)},   // সঠিক: mechanical "tak"
-  bad(){slide(180,110,.18,"sawtooth",.12);slide(170,100,.18,"square",.06)},   // ভুল: buzz
-  back(){slide(700,300,.09,"triangle",.15);noise(.04,900,.2)}                 // backspace: নিচে নামা blip
-};
-const click=bad=>{try{ctx().state==="suspended"&&ctx().resume();SFX[bad?"bad":"ok"]()}catch(e){}};
+  else if(song&&song!=="off"){const M=SONGS[song];let i=0;mTimer=setInterval(()=>{tone(M.n[i%M.n.length],.6,M.t,.05);if(i%3==0)tone(M.n[0]/2,.9,"sine",.06);i++},60000/M.bpm/2);mOn=true}
+  $("mus").style.opacity=mOn?1:.4}
+function musicStop(){clearInterval(mTimer);if(audioEl){audioEl.pause();audioEl=null}mOn=false;$("mus").style.opacity=.4}
+$("mus").onclick=()=>mOn?musicStop():musicStart($("song").value==="off"?"lofi":$("song").value,$("songurl").value.trim());
+musicStop();
 
-/* ---------- exam ---------- */
-let target="",pos=0,errs=0,typed=0,t0=0,tick=0,limit=0,running=false,cfg={};
-function readCfg(){cfg={letters:[...SEL].sort().join(""),level:$("level").value,count:+$("count").value||30,time:+$("time").value||0,song:$("song").value,url:$("songurl").value.trim()}}
-function start(){
-  readCfg();const set=[...SEL];
-  target=makeWords(set,cfg.level,cfg.time?Math.max(300,cfg.count):cfg.count);
-  pos=errs=typed=0;limit=cfg.time;t0=0;running=true;
-  $("setup").classList.add("hidden");$("res").style.display="none";$("play").classList.remove("hidden");
-  kb.classList.remove("pick");render();hint();
-  $("tm").textContent=limit||0;$("wp").textContent=0;$("ac").textContent="100%";
-  if(cfg.song!=="off"||cfg.url)musicStart()}
-function render(){
-  const t=$("text");t.innerHTML="";
-  for(let i=0;i<target.length;i++){const s=document.createElement("span");s.textContent=target[i];s.id="c"+i;s.className=i<pos?"ok":i==pos?"cur":"";t.appendChild(s)}}
-function hint(){
-  const set=SEL;for(const c in keys){keys[c].classList.remove("next");keys[c].classList.toggle("off",/[a-z]/.test(c)&&set.size>0&&!set.has(c))}
-  const n=target[pos];if(n&&keys[n])keys[n].classList.add("next")}
-function stats(){
-  const mins=(Date.now()-t0)/60000||1e-9;
-  const wpm=t0?Math.round((pos/5)/mins):0;
-  const acc=typed?Math.round((typed-errs)/typed*100):100;
-  return{wpm,acc}}
-function loop(){
-  const {wpm,acc}=stats();$("wp").textContent=wpm;$("ac").textContent=acc+"%";
-  if(limit){const left=Math.max(0,limit-Math.floor((Date.now()-t0)/1000));$("tm").textContent=left;if(left<=0)finish()}
-  else $("tm").textContent=Math.floor((Date.now()-t0)/1000)}
-function finish(){
-  if(!running)return;running=false;clearInterval(tick);const {wpm,acc}=stats();
-  $("play").classList.add("hidden");$("res").style.display="block";
-  $("rw").textContent=wpm+" WPM";$("rd").textContent=`Accuracy ${acc}% · ভুল ${errs} · সঠিক অক্ষর ${pos}`;
-  kb.classList.add("pick");paint();musicStop()}
+/* ---------- views / drawer ---------- */
+function openDrawer(o){$("drawer").classList.toggle("open",o);$("shade").classList.toggle("hidden",!o)}
+$("menuB").onclick=()=>openDrawer(!$("drawer").classList.contains("open"));$("shade").onclick=()=>openDrawer(false);
+function go(v){openDrawer(false);if(v==="set"){$("set").classList.remove("hidden");return}
+  endExam(true);view=v;["lessons","custom","hist"].forEach(x=>$("v-"+x).classList.toggle("hidden",x!==v));
+  $("play").classList.add("hidden");$("res").classList.add("hidden");
+  kb.classList.toggle("pick",v==="custom");$("ttl").textContent={lessons:"Lessons",custom:"Custom exam",hist:"History"}[v];
+  if(v==="lessons")drawLessons();if(v==="hist")drawHist();paint();showKb()}
+$("drawer").onclick=e=>{const v=e.target.dataset.v;v&&go(v)};
+function stars(n){return"★".repeat(n)+"☆".repeat(3-n)}
+function drawLessons(){const g=$("lgrid");g.innerHTML="";LESSONS.forEach((L,i)=>{const d=document.createElement("div");d.className="card";
+  d.innerHTML=`<b>Lesson ${i+1}</b><br><small>${L.letters.length>10?"সব অক্ষর":[...L.letters].join(" & ")}</small><div class="st">${stars(PROG[i]||0)}</div>`;d.onclick=()=>startLesson(i);g.appendChild(d)})}
+function drawHist(){$("best").textContent=HIST.length?"সেরা: "+Math.max(...HIST.map(h=>h.wpm))+" WPM":"এখনো কোনো exam দেওয়া হয়নি।";
+  $("hlist").innerHTML=HIST.length?"<table><tr><th>তারিখ</th><th>Exam</th><th>WPM</th><th>Acc</th><th>★</th></tr>"+HIST.map(h=>`<tr><td>${new Date(h.t).toLocaleDateString()}</td><td>${h.title}</td><td>${h.wpm}</td><td>${h.acc}%</td><td>${h.stars}</td></tr>`).join("")+"</table>":""}
+$("hclr").onclick=()=>{HIST=[];PROG={};LS.set("tx_h",HIST);LS.set("tx_p",PROG);drawHist()};
+
+/* ---------- exam engine ---------- */
+let target="",pos=0,okc=0,errs=0,typed=0,t0=0,tick=0,limit=0,st=[],gameAt=new Set(),gameDone=new Set(),gStart=0;
+const el=i=>$("c"+i);
+function startLesson(i){const L=LESSONS[i];start({title:`Lesson ${i+1}: Practice: ${[...L.letters].join(" & ").slice(0,30)}`,letters:L.letters,level:L.level,count:40,time:0,lesson:i,game:S.game,mode:S.mode,song:"off",songurl:""})}
+function readCustom(){return{title:"Custom: "+([...SEL].join("")||"all"),letters:[...SEL].sort().join(""),level:$("level").value,count:+$("count").value||30,time:+$("time").value||0,game:+$("game").value||0,mode:$("mode").value,song:$("song").value,songurl:$("songurl").value.trim(),lesson:null}}
+$("start").onclick=()=>start(readCustom());
+function start(c){endExam(true);cfg=lastCfg=c;setL(c.letters||"");kb.classList.remove("pick");
+  const set=[...SEL];target=makeWords(set,c.level,c.time?Math.max(300,c.count):c.count);
+  pos=okc=errs=typed=0;t0=0;limit=c.time;st=new Array(target.length).fill(0);gameAt=new Set();gameDone=new Set();
+  if(c.game>0){let w=0;for(let i=0;i<target.length;i++)if(target[i]===" "&&++w%c.game===0)gameAt.add(i+1)}
+  ["lessons","custom","hist"].forEach(x=>$("v-"+x).classList.add("hidden"));$("res").classList.add("hidden");$("garea").classList.add("hidden");$("box").classList.remove("hidden");
+  $("play").classList.remove("hidden");$("ttl").textContent=c.title;mode="exam";
+  const t=$("text");t.innerHTML="";for(let i=0;i<target.length;i++){const s=document.createElement("span");s.id="c"+i;s.textContent=target[i];t.appendChild(s)}
+  $("box").scrollTop=0;cls(0);hint();showKb();$("tm").textContent=limit||0;$("wp").textContent=0;$("ac").textContent="100%";$("pg").textContent="0%";
+  if(c.song!=="off"||c.songurl)musicStart(c.song,c.songurl)}
+function cls(i){const e=el(i);if(!e)return;e.className=i===pos?"cur":st[i]===1?"ok":st[i]===2?"bad":""}
+function hint(){paint();const n=target[pos];if(n&&keys[n]){keys[n].classList.add("next");$("fing").textContent=`পরের key: ${n===" "?"space":n} — ${finger[n]}`}
+  const e=el(pos);if(e)$("box").scrollTop=Math.max(0,e.offsetTop-S.font*2.1)}
+function stats(){const m=(Date.now()-t0)/60000||1e-9;return{wpm:t0?Math.round(okc/5/m):0,acc:typed?Math.max(0,Math.round((typed-errs)/typed*100)):100}}
+function loop(){if(mode!=="exam")return;const {wpm,acc}=stats();$("wp").textContent=wpm;$("ac").textContent=acc+"%";$("pg").textContent=Math.round(pos/target.length*100)+"%";
+  const sec=Math.floor((Date.now()-t0)/1000);if(limit){const l=Math.max(0,limit-sec);$("tm").textContent=l;if(l<=0)finish()}else $("tm").textContent=sec}
+function endExam(silent){clearInterval(tick);if(G){cancelAnimationFrame(G.raf);G=null}mode="idle";if(silent)musicStop()}
+function finish(){if(mode!=="exam"&&mode!=="game")return;const {wpm,acc}=stats();endExam();
+  let n=0;if(wpm>=S.gwpm&&acc>=S.gacc){n=1;if(wpm>=S.gwpm*1.5)n=2;if(wpm>=S.gwpm*2&&acc>=97)n=3}
+  const pass=n>0;if(cfg.lesson!=null&&n>(PROG[cfg.lesson]||0)){PROG[cfg.lesson]=n;LS.set("tx_p",PROG)}
+  HIST.unshift({t:Date.now(),title:cfg.title,wpm,acc,stars:n});HIST=HIST.slice(0,40);LS.set("tx_h",HIST);
+  $("play").classList.add("hidden");$("res").classList.remove("hidden");showKb();
+  $("stars").textContent=stars(n);$("rw").textContent=wpm+" WPM";$("rd").textContent=`Accuracy ${acc}% · ভুল ${errs} · সঠিক অক্ষর ${okc}`;
+  $("rp").textContent=pass?"✅ পাস!":`❌ পাস করতে ${S.gwpm} WPM ও ${S.gacc}% Accuracy লাগবে।`;
+  $("next").classList.toggle("hidden",!(pass&&cfg.lesson!=null&&cfg.lesson+1<LESSONS.length));if(pass)sfx("win");musicStop()}
+$("again").onclick=()=>start(lastCfg);$("rst").onclick=()=>lastCfg&&start(lastCfg);$("stop").onclick=()=>{if(t0)finish();else go("lessons")};
+$("next").onclick=()=>startLesson(cfg.lesson+1);$("back").onclick=()=>go(cfg.lesson!=null?"lessons":"custom");
+
 document.addEventListener("keydown",e=>{
-  if(!running||e.ctrlKey||e.metaKey||e.altKey)return;
-  if(e.key==="Backspace"){e.preventDefault();try{ctx().state==="suspended"&&ctx().resume();SFX.back()}catch(x){}return}
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(mode==="game")return gKey(e);
+  if(mode!=="exam")return;
+  if(e.key==="Backspace"){e.preventDefault();if(cfg.mode==="free"&&pos>0){const o=pos;pos--;if(st[pos]===1)okc--;st[pos]=0;cls(o);cls(pos);hint()}sfx("back");return}
   if(e.key.length!==1)return;e.preventDefault();
   if(!t0){t0=Date.now();tick=setInterval(loop,300)}
   const k=keys[e.key.toLowerCase()];if(k){k.classList.add("hit");setTimeout(()=>k.classList.remove("hit"),90)}
   typed++;
-  if(e.key===target[pos]){
-    $("c"+pos).className="ok";pos++;click(false);
-    if(pos>=target.length)return finish();
-    $("c"+pos).className="cur";hint()}
-  else{errs++;click(true);const c=$("c"+pos);c.classList.add("bad");setTimeout(()=>c.classList.remove("bad"),180)}});
-$("start").onclick=start;
-$("stop").onclick=finish;
-$("again").onclick=start;
-$("back").onclick=()=>{$("res").style.display="none";$("setup").classList.remove("hidden");paint()};
+  if(e.key===target[pos]){st[pos]=1;okc++;const o=pos++;cls(o);sfx("ok")}
+  else{errs++;sfx("bad");const c=el(pos);if(cfg.mode==="free"){st[pos]=2;const o=pos++;cls(o)}else if(c){c.classList.add("bad");setTimeout(()=>c.classList.remove("bad"),180);return}}
+  if(pos>=target.length)return finish();
+  cls(pos);hint();
+  if(gameAt.has(pos)&&!gameDone.has(pos)){gameDone.add(pos);startGame()}});
+
+/* ---------- mini game: falling words ---------- */
+let G=null;
+function startGame(){mode="game";gStart=Date.now();const area=$("garea");$("box").classList.add("hidden");area.classList.remove("hidden");
+  area.querySelectorAll(".w").forEach(n=>n.remove());$("gmsg").classList.add("hidden");$("fing").textContent="🎮 শব্দ নিচে পড়ার আগে টাইপ করো! (Esc = বাদ দাও)";
+  const set=[...SEL];G={list:makeWords(set,cfg.level==="random"?"short":cfg.level,80).split(" "),ws:[],score:0,lives:3,end:Date.now()+S.glen*1000,cur:null,last:performance.now(),spawn:0,idx:0,raf:0};
+  G.raf=requestAnimationFrame(gLoop)}
+function gUpd(w){w.el.innerHTML=`<b>${w.txt.slice(0,w.n)}</b>${w.txt.slice(w.n)}`;w.el.classList.toggle("cur",w===G.cur)}
+function gKill(w){w.el.remove();G.ws=G.ws.filter(x=>x!==w);if(G.cur===w)G.cur=null}
+function gLoop(now){if(!G)return;const dt=(now-G.last)/1000;G.last=now;const area=$("garea"),H=area.clientHeight,W=area.clientWidth;
+  G.spawn-=dt;if(G.spawn<=0){G.spawn=1.5;const t=G.list[G.idx++%G.list.length],e=document.createElement("div");e.className="w";area.appendChild(e);
+    const w={txt:t,n:0,el:e,y:30,x:Math.random()*Math.max(10,W-t.length*16-50)+8};e.style.left=w.x+"px";G.ws.push(w);gUpd(w)}
+  G.ws.slice().forEach(w=>{w.y+=dt*(45+G.score*.6);w.el.style.top=w.y+"px";if(w.y>H-38){gKill(w);G.lives--;sfx("bad")}});
+  const left=Math.max(0,Math.ceil((G.end-Date.now())/1000));$("gs").textContent="Score "+G.score;$("gt").textContent="⏱ "+left;$("gl").textContent="❤".repeat(Math.max(0,G.lives));
+  if(left<=0||G.lives<=0)return gEnd();G.raf=requestAnimationFrame(gLoop)}
+function gKey(e){if(!G)return;if(e.key==="Escape"){return gEnd(true)}if(e.key.length!==1||e.key===" ")return;e.preventDefault();
+  const k=keys[e.key.toLowerCase()];if(k){k.classList.add("hit");setTimeout(()=>k.classList.remove("hit"),90)}
+  let w=G.cur;if(!w){const c=G.ws.filter(x=>x.txt[0]===e.key).sort((a,b)=>b.y-a.y);w=c[0];if(w){G.cur=w}}
+  if(w&&w.txt[w.n]===e.key){w.n++;sfx("ok");gUpd(w);if(w.n>=w.txt.length){G.score+=w.txt.length;sfx("pop");gKill(w)}}else sfx("bad")}
+function gEnd(skip){if(!G)return;cancelAnimationFrame(G.raf);const sc=G.score;G=null;const m=$("gmsg");
+  const back=()=>{$("garea").classList.add("hidden");$("box").classList.remove("hidden");if(t0)t0+=Date.now()-gStart;mode="exam";cls(pos);hint()};
+  if(skip===true)return back();m.textContent=`গেম শেষ! Score ${sc} 🎉`;m.classList.remove("hidden");sfx("win");mode="wait";setTimeout(back,1600)}
 
 /* ---------- link params ---------- */
-function applyParams(){
-  const q=location.search.slice(1);if(!q)return;
-  const p=new URLSearchParams(q);let c={};
-  const first=decodeURIComponent(q.split("&")[0]);
+const KEYS=["letters","level","count","time","game","mode","song","songurl"];
+$("shr").onclick=()=>{const c=(mode==="idle"&&view==="custom")?readCustom():(lastCfg||readCustom());const u=new URL(location.href);u.search="";
+  if(c.lesson!=null)u.searchParams.set("lesson",c.lesson+1);else KEYS.forEach(k=>c[k]!==undefined&&c[k]!==""&&u.searchParams.set(k,c[k]));
+  try{navigator.clipboard.writeText(u.toString())}catch(e){}prompt("এই link খুললেই সরাসরি exam শুরু হবে:",u.toString())};
+function route(){const q=location.search.slice(1);if(!q)return go("lessons");
+  const p=new URLSearchParams(q),first=decodeURIComponent(q.split("&")[0]);let c={};
   if(!first.includes("=")&&PRESETS[first])c={...PRESETS[first]};
   for(const [k,v] of p)if(v!=="")c[k]=v;
-  if(c.letters){[...c.letters.toLowerCase()].forEach(x=>/[a-z]/.test(x)&&SEL.add(x))}
-  if(c.level&&LV[c.level])$("level").value=c.level;
-  if(c.count)$("count").value=c.count;
-  if(c.time)$("time").value=c.time;
-  if(c.song)$("song").value=c.song;
-  sync();
-  if(c.auto==="1"||PRESETS[first])setTimeout(()=>{},0)}
-$("shr").onclick=()=>{readCfg();const u=new URL(location.href);u.search="";
-  u.searchParams.set("letters",cfg.letters);u.searchParams.set("level",cfg.level);u.searchParams.set("count",cfg.count);u.searchParams.set("time",cfg.time);u.searchParams.set("song",cfg.song);
-  navigator.clipboard&&navigator.clipboard.writeText(u.toString());prompt("এই link দিয়ে একই exam দেওয়া যাবে:",u.toString())};
-applyParams();paint();
+  if(p.has("lesson")){const i=Math.min(LESSONS.length,Math.max(1,+p.get("lesson")||1))-1;go("lessons");return startLesson(i)}
+  if(c.letters!==undefined||PRESETS[first]){go("custom");setL(c.letters||"");
+    ["level","count","time","game","mode","song","songurl"].forEach(k=>{if(c[k]!==undefined&&$(k))$(k).value=c[k]});
+    if(p.get("auto")!=="0")start({...readCustom(),title:c.title||"Practice: "+([...SEL].join(" & ")||"all")})}
+  else go("lessons")}
+applyS();$("game").value=S.game;$("mode").value=S.mode;musicStop();drawLessons();paint();route();
 if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 </script>
 </body>

@@ -1,4 +1,4 @@
-const CACHE = "typing-exam-v2";
+const CACHE = "typing-exam-v3";
 const FILES = ["./", "./index.html"];
 
 self.addEventListener("install", e => {
