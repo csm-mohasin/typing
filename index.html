@@ -1,392 +1,216 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TypingFlow | Pro Typing Practice</title>
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#00ff87" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="apple-touch-icon" href="https://picsum.photos/seed/typingflow/192/192" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              mono: ['"JetBrains Mono"', 'monospace'],
-              display: ['"Space Grotesk"', 'sans-serif'],
-            }
-          }
-        }
-      }
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body class="bg-[#0a0a0f] text-neutral-200 font-display overflow-x-hidden">
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typing Exam</title>
+<style>
+:root{--bg:#fff;--tx:#222;--mut:#9a9a9a;--ok:#1a7cf6;--bad:#e5484d;--line:#e3e3e3;--f0:#1a7cf6;--f1:#7cb52a;--f2:#f0a800;--f3:#f0494a}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,"Noto Sans Bengali",sans-serif;background:var(--bg);color:var(--tx)}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}
+header b{flex:1}
+button,select,input{font:inherit}
+.btn{background:var(--ok);color:#fff;border:0;border-radius:8px;padding:10px 20px;cursor:pointer}
+.btn.ghost{background:#eee;color:#222}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+.panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0}
+label{display:block;font-size:13px;color:#555;margin-bottom:4px}
+select,input[type=text],input[type=number]{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px}
+#text{font:34px/2.1 ui-monospace,Consolas,monospace;color:var(--mut);margin:20px 0;border-bottom:1px solid #bbb;min-height:200px;word-break:break-word}
+#text span.ok{color:#222}
+#text span.bad{color:var(--bad);background:#fde7e8}
+#text span.cur{border-bottom:3px solid var(--ok);color:#222}
+#bar{display:flex;gap:24px;font-size:15px;color:#555}
+#bar b{color:#222;font-size:20px}
+#kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin:20px auto;user-select:none}
+.row{display:flex;gap:6px}
+.k{width:48px;height:48px;border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;cursor:default;transition:opacity .1s,transform .05s}
+.k.off{opacity:.3}
+.k.next{outline:4px solid #222;opacity:1}
+.k.hit{transform:scale(.88)}
+.k.sel{outline:3px solid #222}
+#kb.pick .k{cursor:pointer}
+.sp{width:300px;background:#ddd;color:#999}
+#res{text-align:center;padding:30px;display:none}
+#res h2{font-size:56px;margin:0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header><b>Typing Exam</b><button class="btn ghost" id="mus">🎵 গান: Off</button><button class="btn ghost" id="shr">🔗 Link</button></header>
+<div class="wrap">
 
-    <div id="app" class="min-h-screen flex flex-col max-w-5xl mx-auto px-4">
+<section id="setup">
+  <p>নিচের কিবোর্ডে যে অক্ষরগুলো দিয়ে exam দিতে চাও সেগুলোতে ক্লিক করো (অথবা নিচের box-এ লেখো)।</p>
+  <div class="panel">
+    <div><label>অক্ষর (letters)</label><input type="text" id="letters" placeholder="asdfghjkl"></div>
+    <div><label>Level</label>
+      <select id="level">
+        <option value="random">Random</option><option value="short">Short</option><option value="easy">Easy</option>
+        <option value="normal" selected>Normal</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="toohard">Too Hard</option>
+      </select></div>
+    <div><label>শব্দ সংখ্যা</label><input type="number" id="count" value="30" min="5" max="300"></div>
+    <div><label>সময় (সেকেন্ড, 0 = সময় সীমা নেই)</label><input type="number" id="time" value="0" min="0" step="15"></div>
+    <div><label>গান</label>
+      <select id="song"><option value="off">বন্ধ</option><option value="lofi">Lofi</option><option value="chill">Chill</option><option value="fast">Fast beat</option></select></div>
+    <div><label>নিজের গান (mp3 link, ঐচ্ছিক)</label><input type="text" id="songurl" placeholder="https://..."></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn" id="start">START TYPING</button>
+    <button class="btn ghost" id="all">সব অক্ষর</button>
+    <button class="btn ghost" id="home">Home row</button>
+    <button class="btn ghost" id="clr">মুছো</button>
+  </div>
+</section>
 
-      <!-- Header -->
-      <header id="main-header" class="py-4 flex justify-between items-center transition-all duration-500">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00ff87] to-[#00c6ff] flex items-center justify-center shadow-lg shadow-[#00ff87]/20">
-            <i data-lucide="keyboard" class="w-4 h-4 text-black"></i>
-          </div>
-          <span class="text-lg font-bold tracking-tight">Typing<span class="text-[#00ff87]">Flow</span></span>
-        </div>
-        <div class="flex items-center gap-3">
-          <!-- User stats -->
-          <div id="user-stats" class="flex items-center gap-3 text-sm font-medium">
-            <div class="flex items-center gap-1 text-yellow-400">
-              <i data-lucide="zap" class="w-4 h-4"></i>
-              <span id="streak-count">0</span>
-            </div>
-            <div class="flex items-center gap-1 text-[#00ff87]">
-              <i data-lucide="award" class="w-4 h-4"></i>
-              <span id="user-level">Lvl 1</span>
-            </div>
-            <div class="flex items-center gap-1 text-blue-400">
-              <i data-lucide="target" class="w-4 h-4"></i>
-              <span id="daily-goal">0/5</span>
-            </div>
-          </div>
-          <button id="history-btn" class="p-2 hover:bg-white/5 rounded-lg transition-colors" title="History">
-            <i data-lucide="bar-chart-2" class="w-5 h-5 text-neutral-400"></i>
-          </button>
-          <button id="settings-btn" class="p-2 hover:bg-white/5 rounded-lg transition-colors" title="Settings">
-            <i data-lucide="settings" class="w-5 h-5 text-neutral-400"></i>
-          </button>
-        </div>
-      </header>
+<section id="play" class="hidden">
+  <div id="bar"><div>Time <b id="tm">0</b></div><div>WPM <b id="wp">0</b></div><div>Accuracy <b id="ac">100%</b></div><button class="btn ghost" id="stop" style="margin-left:auto">বন্ধ</button></div>
+  <div id="text"></div>
+</section>
 
-      <!-- Mode & Time Config Bar -->
-      <div id="config-bar" class="flex flex-wrap items-center justify-center gap-2 py-3 transition-all duration-500">
-        <div class="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/10">
-          <button class="mode-btn active px-3 py-1.5 rounded-lg text-sm font-semibold" data-mode="words">words</button>
-          <button class="mode-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-mode="sentences">sentences</button>
-          <button class="mode-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-mode="paragraphs">paragraphs</button>
-          <button class="mode-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-mode="numbers">numbers</button>
-          <button class="mode-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-mode="punctuation">punct.</button>
-        </div>
-        <div class="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/10">
-          <button class="time-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-time="15">15s</button>
-          <button class="time-btn active px-3 py-1.5 rounded-lg text-sm font-semibold" data-time="30">30s</button>
-          <button class="time-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-time="60">60s</button>
-          <button class="time-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-time="120">120s</button>
-          <button class="time-btn px-3 py-1.5 rounded-lg text-sm font-semibold text-neutral-500" data-time="custom">∞</button>
-        </div>
-      </div>
+<div id="kb"></div>
 
-      <!-- Live Stats Bar -->
-      <div id="live-stats" class="flex justify-center gap-8 py-2 opacity-0 transition-opacity duration-300">
-        <div class="text-center">
-          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">WPM</div>
-          <div id="live-wpm" class="text-3xl font-bold text-[#00ff87] tabular-nums">0</div>
-        </div>
-        <div class="text-center">
-          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">RAW</div>
-          <div id="live-raw" class="text-3xl font-bold text-neutral-400 tabular-nums">0</div>
-        </div>
-        <div class="text-center relative">
-          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">TIME</div>
-          <div class="relative w-12 h-12 mx-auto flex items-center justify-center">
-            <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
-              <circle cx="24" cy="24" r="20" stroke="#1a1a2e" stroke-width="3" fill="transparent"/>
-              <circle id="timer-circle" cx="24" cy="24" r="20" stroke="#00ff87" stroke-width="3" fill="transparent"
-                stroke-dasharray="125.6" stroke-dashoffset="0" class="transition-all duration-1000"/>
-            </svg>
-            <span id="live-timer" class="text-lg font-bold tabular-nums relative z-10">30</span>
-          </div>
-        </div>
-        <div class="text-center">
-          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">ACC</div>
-          <div id="live-accuracy" class="text-3xl font-bold text-white tabular-nums">100%</div>
-        </div>
-        <div class="text-center">
-          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-0.5">ERR</div>
-          <div id="live-errors" class="text-3xl font-bold text-red-400 tabular-nums">0</div>
-        </div>
-      </div>
+<section id="res">
+  <h2 id="rw"></h2><p id="rd"></p>
+  <button class="btn" id="again">আবার দাও</button> <button class="btn ghost" id="back">Setup-এ ফিরো</button>
+</section>
+</div>
 
-      <!-- Main Typing Area -->
-      <main class="flex-1 flex flex-col items-center justify-center gap-6 py-4">
+<script>
+/* ---------- data ---------- */
+const WORDS=`a an as at be by do go he if in is it me my no of on or so to up us we the and are but can day did for get has her him his how its let may new not now old one our out put say see she too two use was way who why you yes year yard yellow already early require liquid lady joy yield risk sheaf qualify sir quick quiet queen quite quote square quest equal after again also been come could each even find first give good great hand have here high home just keep kind know large last late left life like line little long look made make many more most move much must name need next only open over part place plant point right same school seem show small some sound still such take tell than that them then there these they thing think this those three through time turn under until very want water well were what when where which while will with word work would write about above across against almost along always animal answer around ask asked before began begin being below between black bring build carry change close cold country cover cross dark dream drive during earth enough every example face fall family father feel field fire follow food form found friend girl green ground group grow happy heard heart heavy horse house idea island learn leave letter light listen mother mountain music never night number paper people picture plain power problem question quarter quickly quarrel quality quiz quilt queue rain read river round second sentence should simple sleep spring story strong study summer system table together toward travel visit watch whole window winter without wonder world young yesterday yawn yarn yolk yoga yeast yak jazz jump jelly jacket jungle just judge joke jar jet kid king kite knee knife knock lamp land laugh lemon lunch magic market mirror monkey nature needle noise ocean orange pencil pocket pretty rabbit rocket safe salad shadow silver smile snack soccer tiger turtle uncle valley velvet wagon zebra zero`.split(/\s+/);
+const LV={random:[1,12],short:[2,3],easy:[3,4],normal:[4,5],medium:[5,6],hard:[6,8],toohard:[8,14]};
+const ROWS=["`1234567890-=","qwertyuiop[]","asdfghjkl;'","zxcvbnm,./"];
+const FING=[[0,0,1,2,3,3,3,3,2,1,0,0,0],[0,1,2,3,3,3,3,2,1,0,0,0],[0,1,2,3,3,3,3,2,1,0,0],[0,1,2,3,3,3,3,2,1,0]];
+const COL=["var(--f0)","var(--f1)","var(--f2)","var(--f3)"];
+const SEL=new Set();
+const $=id=>document.getElementById(id);
+const PRESETS={"2943.play":{letters:"qy",level:"normal",count:30}};
 
-        <!-- Typing text display - monkeytype style -->
-        <div class="relative w-full">
-          <div id="typing-container"
-            class="font-mono text-xl sm:text-2xl leading-loose break-words select-none cursor-text"
-            style="word-spacing:0.15em; height:168px; overflow:hidden; position:relative;"
-            tabindex="0">
-          </div>
+/* ---------- keyboard ---------- */
+const kb=$("kb"),keys={};
+ROWS.forEach((r,i)=>{const d=document.createElement("div");d.className="row";
+  [...r].forEach((c,j)=>{const k=document.createElement("div");k.className="k";k.textContent=c;k.style.background=COL[FING[i][j]];keys[c]=k;d.appendChild(k);
+    k.onclick=()=>{if(!kb.classList.contains("pick"))return;if(!/[a-z]/.test(c))return;SEL.has(c)?SEL.delete(c):SEL.add(c);sync()}});
+  kb.appendChild(d)});
+const sp=document.createElement("div");sp.className="row";const s=document.createElement("div");s.className="k sp";s.textContent="space";keys[" "]=s;sp.appendChild(s);kb.appendChild(sp);
+kb.classList.add("pick");
+function sync(){ $("letters").value=[...SEL].sort().join("");paint()}
+function paint(){for(const c in keys){const k=keys[c];k.classList.toggle("sel",kb.classList.contains("pick")&&SEL.has(c));k.classList.toggle("off",/[a-z]/.test(c)&&SEL.size>0&&!SEL.has(c))}}
+$("letters").oninput=e=>{SEL.clear();[...e.target.value.toLowerCase()].forEach(c=>/[a-z]/.test(c)&&SEL.add(c));paint()};
+$("all").onclick=()=>{"abcdefghijklmnopqrstuvwxyz".split("").forEach(c=>SEL.add(c));sync()};
+$("home").onclick=()=>{SEL.clear();[..."asdfghjkl"].forEach(c=>SEL.add(c));sync()};
+$("clr").onclick=()=>{SEL.clear();sync()};
 
-          <!-- Focus Overlay -->
-          <div id="focus-overlay"
-            class="absolute inset-0 flex items-center justify-center bg-[#0a0a0f]/80 backdrop-blur-sm rounded-xl opacity-0 pointer-events-none transition-opacity duration-300 z-10">
-            <div class="flex flex-col items-center gap-2 text-neutral-400">
-              <i data-lucide="mouse-pointer-click" class="w-6 h-6 animate-bounce text-[#00ff87]"></i>
-              <span class="text-sm font-medium">Tap to focus</span>
-            </div>
-          </div>
-        </div>
+/* ---------- word generation ---------- */
+const V="aeiou",rnd=a=>a[Math.random()*a.length|0];
+function pseudo(set,len){const vs=set.filter(c=>V.includes(c)),cs=set.filter(c=>!V.includes(c));let w="";
+  for(let i=0;i<len;i++){w+=(vs.length&&cs.length)?(i%2?rnd(vs):rnd(cs)):rnd(set)}return w}
+function makeWords(set,level,n){
+  const [lo,hi]=LV[level];const ok=w=>w.length>=lo&&w.length<=hi&&(!set.length||[...w].every(c=>set.includes(c)));
+  let pool=[...new Set(WORDS)].filter(ok);const out=[];
+  const all=set.length?set:"abcdefghijklmnopqrstuvwxyz".split("");
+  for(let i=0;i<n;i++){
+    if(pool.length>=6&&Math.random()<.85)out.push(rnd(pool));
+    else out.push(pseudo(all,lo+Math.floor(Math.random()*(hi-lo+1))))}
+  return out.join(" ")}
 
-        <!-- Progress bar -->
-        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-          <div id="progress-bar" class="h-full w-0 rounded-full transition-all duration-100"
-            style="background: linear-gradient(90deg, #00ff87, #00c6ff); box-shadow: 0 0 10px #00ff8766;"></div>
-        </div>
+/* ---------- audio ---------- */
+let ac,mTimer,audioEl,mOn=false;
+const SONGS={lofi:{bpm:70,n:[220,261.6,329.6,392,329.6,261.6],t:"triangle"},chill:{bpm:90,n:[196,246.9,293.7,392,293.7,246.9,196],t:"sine"},fast:{bpm:140,n:[261.6,329.6,392,523.3,392,329.6],t:"square"}};
+function ctx(){return ac||(ac=new(window.AudioContext||window.webkitAudioContext)())}
+function tone(f,d,t,v){const c=ctx(),o=c.createOscillator(),g=c.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+d)}
+function musicStart(){musicStop();const url=$("songurl").value.trim(),sg=$("song").value;
+  if(url){audioEl=new Audio(url);audioEl.loop=true;audioEl.play().catch(()=>{});mOn=true}
+  else if(sg!=="off"){const S=SONGS[sg];let i=0;mTimer=setInterval(()=>{tone(S.n[i%S.n.length],.6,S.t,.05);if(i%3==0)tone(S.n[0]/2,.9,"sine",.06);i++},60000/S.bpm/2);mOn=true}
+  $("mus").textContent="🎵 গান: "+(mOn?"On":"Off")}
+function musicStop(){clearInterval(mTimer);if(audioEl){audioEl.pause();audioEl=null}mOn=false;$("mus").textContent="🎵 গান: Off"}
+$("mus").onclick=()=>mOn?musicStop():musicStart();
+/* ---------- typing sounds (WebAudio, offline) ---------- */
+let noiseBuf;
+function noise(d,freq,v){const c=ctx();
+  if(!noiseBuf){noiseBuf=c.createBuffer(1,c.sampleRate*.1,c.sampleRate);const a=noiseBuf.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1}
+  const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();
+  s.buffer=noiseBuf;f.type="bandpass";f.frequency.value=freq;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);
+  s.connect(f).connect(g).connect(c.destination);s.start();s.stop(c.currentTime+d)}
+function slide(f1,f2,d,type,v){const c=ctx(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime;
+  o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(c.destination);o.start();o.stop(t+d)}
+const SFX={
+  ok(){noise(.05,2200+Math.random()*400,.5);slide(180,90,.06,"sine",.25)},   // সঠিক: mechanical "tak"
+  bad(){slide(180,110,.18,"sawtooth",.12);slide(170,100,.18,"square",.06)},   // ভুল: buzz
+  back(){slide(700,300,.09,"triangle",.15);noise(.04,900,.2)}                 // backspace: নিচে নামা blip
+};
+const click=bad=>{try{ctx().state==="suspended"&&ctx().resume();SFX[bad?"bad":"ok"]()}catch(e){}};
 
-        <!-- Shortcuts -->
-        <div class="flex items-center gap-4 text-xs text-neutral-600">
-          <span><kbd class="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-neutral-400">Esc</kbd> restart</span>
-          <span><kbd class="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-neutral-400">Tab</kbd> focus</span>
-          <span><kbd class="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-neutral-400">Ctrl+Z</kbd> undo word</span>
-        </div>
+/* ---------- exam ---------- */
+let target="",pos=0,errs=0,typed=0,t0=0,tick=0,limit=0,running=false,cfg={};
+function readCfg(){cfg={letters:[...SEL].sort().join(""),level:$("level").value,count:+$("count").value||30,time:+$("time").value||0,song:$("song").value,url:$("songurl").value.trim()}}
+function start(){
+  readCfg();const set=[...SEL];
+  target=makeWords(set,cfg.level,cfg.time?Math.max(300,cfg.count):cfg.count);
+  pos=errs=typed=0;limit=cfg.time;t0=0;running=true;
+  $("setup").classList.add("hidden");$("res").style.display="none";$("play").classList.remove("hidden");
+  kb.classList.remove("pick");render();hint();
+  $("tm").textContent=limit||0;$("wp").textContent=0;$("ac").textContent="100%";
+  if(cfg.song!=="off"||cfg.url)musicStart()}
+function render(){
+  const t=$("text");t.innerHTML="";
+  for(let i=0;i<target.length;i++){const s=document.createElement("span");s.textContent=target[i];s.id="c"+i;s.className=i<pos?"ok":i==pos?"cur":"";t.appendChild(s)}}
+function hint(){
+  const set=SEL;for(const c in keys){keys[c].classList.remove("next");keys[c].classList.toggle("off",/[a-z]/.test(c)&&set.size>0&&!set.has(c))}
+  const n=target[pos];if(n&&keys[n])keys[n].classList.add("next")}
+function stats(){
+  const mins=(Date.now()-t0)/60000||1e-9;
+  const wpm=t0?Math.round((pos/5)/mins):0;
+  const acc=typed?Math.round((typed-errs)/typed*100):100;
+  return{wpm,acc}}
+function loop(){
+  const {wpm,acc}=stats();$("wp").textContent=wpm;$("ac").textContent=acc+"%";
+  if(limit){const left=Math.max(0,limit-Math.floor((Date.now()-t0)/1000));$("tm").textContent=left;if(left<=0)finish()}
+  else $("tm").textContent=Math.floor((Date.now()-t0)/1000)}
+function finish(){
+  if(!running)return;running=false;clearInterval(tick);const {wpm,acc}=stats();
+  $("play").classList.add("hidden");$("res").style.display="block";
+  $("rw").textContent=wpm+" WPM";$("rd").textContent=`Accuracy ${acc}% · ভুল ${errs} · সঠিক অক্ষর ${pos}`;
+  kb.classList.add("pick");paint();musicStop()}
+document.addEventListener("keydown",e=>{
+  if(!running||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key==="Backspace"){e.preventDefault();try{ctx().state==="suspended"&&ctx().resume();SFX.back()}catch(x){}return}
+  if(e.key.length!==1)return;e.preventDefault();
+  if(!t0){t0=Date.now();tick=setInterval(loop,300)}
+  const k=keys[e.key.toLowerCase()];if(k){k.classList.add("hit");setTimeout(()=>k.classList.remove("hit"),90)}
+  typed++;
+  if(e.key===target[pos]){
+    $("c"+pos).className="ok";pos++;click(false);
+    if(pos>=target.length)return finish();
+    $("c"+pos).className="cur";hint()}
+  else{errs++;click(true);const c=$("c"+pos);c.classList.add("bad");setTimeout(()=>c.classList.remove("bad"),180)}});
+$("start").onclick=start;
+$("stop").onclick=finish;
+$("again").onclick=start;
+$("back").onclick=()=>{$("res").style.display="none";$("setup").classList.remove("hidden");paint()};
 
-        <!-- Visual Keyboard (desktop) -->
-        <div id="visual-keyboard" class="hidden lg:flex flex-col gap-1.5 p-4 bg-white/3 rounded-2xl border border-white/5 w-full max-w-2xl">
-        </div>
-
-      </main>
-
-      <footer id="main-footer" class="py-4 text-center text-neutral-700 text-xs border-t border-white/5 transition-all duration-500">
-        TypingFlow v2 · Built for speed · <span id="pb-footer" class="text-[#00ff87]">PB: 0 WPM</span>
-      </footer>
-    </div>
-
-    <!-- ===== RESULTS MODAL ===== -->
-    <div id="results-modal"
-      class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-500">
-      <div class="w-full max-w-2xl bg-[#0f0f1a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
-
-        <!-- Top stats -->
-        <div class="p-6 border-b border-white/5">
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <h2 class="text-2xl font-bold">Test Complete</h2>
-              <p class="text-neutral-500 text-sm" id="result-date"></p>
-            </div>
-            <div class="flex gap-2">
-              <button id="share-btn" class="p-2 hover:bg-white/5 rounded-lg transition-colors text-neutral-400" title="Copy result">
-                <i data-lucide="share-2" class="w-5 h-5"></i>
-              </button>
-              <button id="tweet-btn" class="p-2 hover:bg-white/5 rounded-lg transition-colors text-sky-400" title="Tweet">
-                <i data-lucide="twitter" class="w-5 h-5"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Main numbers -->
-          <div class="grid grid-cols-4 gap-4 mb-4">
-            <div>
-              <div class="text-xs text-neutral-500 uppercase tracking-widest mb-1">WPM</div>
-              <div id="result-wpm" class="text-5xl font-bold text-[#00ff87] tabular-nums">0</div>
-            </div>
-            <div>
-              <div class="text-xs text-neutral-500 uppercase tracking-widest mb-1">RAW</div>
-              <div id="result-raw" class="text-5xl font-bold text-neutral-400 tabular-nums">0</div>
-            </div>
-            <div>
-              <div class="text-xs text-neutral-500 uppercase tracking-widest mb-1">ACC</div>
-              <div id="result-accuracy" class="text-5xl font-bold text-white tabular-nums">0%</div>
-            </div>
-            <div>
-              <div class="text-xs text-neutral-500 uppercase tracking-widest mb-1">ERR</div>
-              <div id="result-errors" class="text-5xl font-bold text-red-400 tabular-nums">0</div>
-            </div>
-          </div>
-
-          <!-- Secondary stats -->
-          <div class="flex flex-wrap gap-4 text-sm text-neutral-500">
-            <span>CPM: <span id="result-cpm" class="text-neutral-300 font-semibold">0</span></span>
-            <span>Chars: <span id="result-chars" class="text-neutral-300 font-semibold">0</span></span>
-            <span>Time: <span id="result-time" class="text-neutral-300 font-semibold">0s</span></span>
-            <span>XP: <span id="result-xp" class="text-yellow-400 font-semibold">+0</span></span>
-            <span>PB: <span id="result-pb" class="text-[#00ff87] font-semibold">0 WPM</span></span>
-          </div>
-        </div>
-
-        <!-- WPM Chart -->
-        <div class="p-6 border-b border-white/5">
-          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-3">WPM over time</div>
-          <div id="wpm-chart-container" class="w-full h-32">
-            <svg id="wpm-chart" class="w-full h-full"></svg>
-          </div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div class="p-6 border-b border-white/5">
-          <div class="text-xs text-neutral-500 uppercase tracking-widest mb-3">Personal Best — Top 5</div>
-          <div id="leaderboard" class="space-y-2"></div>
-        </div>
-
-        <!-- Actions -->
-        <div class="p-6 flex gap-3">
-          <button id="restart-btn"
-            class="flex-1 py-3 bg-[#00ff87] hover:bg-[#00e07a] text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#00ff87]/20">
-            <i data-lucide="refresh-cw" class="w-5 h-5"></i> Try Again
-          </button>
-          <button id="close-results-btn"
-            class="px-6 py-3 bg-white/5 hover:bg-white/10 text-neutral-300 font-semibold rounded-xl transition-all border border-white/10">
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== HISTORY MODAL ===== -->
-    <div id="history-modal"
-      class="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-500">
-      <div class="w-full max-w-lg bg-[#0f0f1a] border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
-        <div class="p-6 border-b border-white/5 flex justify-between items-center">
-          <h2 class="text-xl font-bold">Session History</h2>
-          <button id="close-history-btn" class="p-2 hover:bg-white/5 rounded-lg">
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
-        </div>
-        <div class="p-6 max-h-[60vh] overflow-y-auto">
-          <div id="history-list" class="space-y-2"></div>
-        </div>
-        <div class="p-4 border-t border-white/5 flex justify-end">
-          <button id="clear-history-btn" class="px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 rounded-lg transition-colors">
-            Clear History
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== SETTINGS DRAWER ===== -->
-    <div id="settings-drawer"
-      class="fixed inset-y-0 right-0 w-full max-w-sm bg-[#0f0f1a] border-l border-white/10 z-50 translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
-      <div class="p-6 border-b border-white/5 flex justify-between items-center">
-        <h2 class="text-xl font-bold">Settings</h2>
-        <button id="close-settings-btn" class="p-2 hover:bg-white/5 rounded-full">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="flex-1 overflow-y-auto p-6 space-y-8">
-
-        <!-- Sound -->
-        <section class="space-y-4">
-          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Sound</h3>
-          <div class="flex items-center justify-between">
-            <span class="text-sm">Typing Sounds</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="sound-toggle" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="space-y-2">
-            <div class="flex justify-between text-xs text-neutral-500">
-              <span>Volume</span><span id="volume-value">50%</span>
-            </div>
-            <input type="range" id="volume-slider" min="0" max="100" value="50" class="range-input w-full">
-          </div>
-          <div class="space-y-2">
-            <label class="text-sm block">Sound Theme</label>
-            <select id="sound-theme" class="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-sm">
-              <option value="mechanical">Mechanical</option>
-              <option value="soft">Soft</option>
-              <option value="typewriter">Typewriter</option>
-              <option value="beep">Beep</option>
-            </select>
-          </div>
-        </section>
-
-        <!-- Appearance -->
-        <section class="space-y-4">
-          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Appearance</h3>
-          <div>
-            <label class="text-sm block mb-2">Color Theme</label>
-            <div class="grid grid-cols-4 gap-2">
-              <button class="theme-btn h-8 rounded-lg border-2 border-transparent active-theme" data-theme="green" style="background:#00ff87" title="Green"></button>
-              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="blue" style="background:#00c6ff" title="Blue"></button>
-              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="purple" style="background:#a855f7" title="Purple"></button>
-              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="orange" style="background:#f97316" title="Orange"></button>
-              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="pink" style="background:#ec4899" title="Pink"></button>
-              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="yellow" style="background:#eab308" title="Yellow"></button>
-              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="red" style="background:#ef4444" title="Red"></button>
-              <button class="theme-btn h-8 rounded-lg border-2 border-transparent" data-theme="white" style="background:#f5f5f5" title="White"></button>
-            </div>
-          </div>
-          <div>
-            <label class="text-sm block mb-2">Font Size</label>
-            <div class="flex justify-between text-xs text-neutral-500 mb-1">
-              <span>Size</span><span id="font-size-value">21px</span>
-            </div>
-            <input type="range" id="font-size-slider" min="14" max="36" value="21" class="range-input w-full">
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm">Smooth Caret</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="smooth-caret-toggle" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </section>
-
-        <!-- Behavior -->
-        <section class="space-y-4">
-          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Behavior</h3>
-          <div class="flex items-center justify-between">
-            <span class="text-sm">Stop on Error</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="stop-on-error-toggle">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm">Blind Mode</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="blind-mode-toggle">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm">Zen Mode</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="zen-mode-toggle">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm">Show Keyboard</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="show-keyboard-toggle" checked>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </section>
-
-        <!-- Custom Text -->
-        <section class="space-y-3">
-          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Custom Text</h3>
-          <textarea id="custom-text-input"
-            class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm h-24 resize-none focus:outline-none focus:border-[#00ff87]/50"
-            placeholder="Paste your own text here..."></textarea>
-          <button id="apply-custom-text"
-            class="w-full py-2 bg-[#00ff87]/10 hover:bg-[#00ff87]/20 text-[#00ff87] text-sm font-semibold rounded-xl transition-colors border border-[#00ff87]/20">
-            Apply Custom Text
-          </button>
-        </section>
-
-        <!-- Stats Reset -->
-        <section class="space-y-3">
-          <h3 class="text-xs uppercase tracking-widest text-neutral-500 font-bold">Data</h3>
-          <button id="reset-stats-btn"
-            class="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-xl transition-colors border border-red-500/20">
-            Reset All Stats
-          </button>
-        </section>
-      </div>
-    </div>
-
-    <script src="script.js"></script>
-  </body>
+/* ---------- link params ---------- */
+function applyParams(){
+  const q=location.search.slice(1);if(!q)return;
+  const p=new URLSearchParams(q);let c={};
+  const first=decodeURIComponent(q.split("&")[0]);
+  if(!first.includes("=")&&PRESETS[first])c={...PRESETS[first]};
+  for(const [k,v] of p)if(v!=="")c[k]=v;
+  if(c.letters){[...c.letters.toLowerCase()].forEach(x=>/[a-z]/.test(x)&&SEL.add(x))}
+  if(c.level&&LV[c.level])$("level").value=c.level;
+  if(c.count)$("count").value=c.count;
+  if(c.time)$("time").value=c.time;
+  if(c.song)$("song").value=c.song;
+  sync();
+  if(c.auto==="1"||PRESETS[first])setTimeout(()=>{},0)}
+$("shr").onclick=()=>{readCfg();const u=new URL(location.href);u.search="";
+  u.searchParams.set("letters",cfg.letters);u.searchParams.set("level",cfg.level);u.searchParams.set("count",cfg.count);u.searchParams.set("time",cfg.time);u.searchParams.set("song",cfg.song);
+  navigator.clipboard&&navigator.clipboard.writeText(u.toString());prompt("এই link দিয়ে একই exam দেওয়া যাবে:",u.toString())};
+applyParams();paint();
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script>
+</body>
 </html>

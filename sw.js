@@ -1,38 +1,36 @@
-const CACHE = 'typingflow-v2';
-const ASSETS = [
-  './',
-  './index.html',
-  './script.js',
-  './style.css',
-  './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://unpkg.com/lucide@latest/dist/umd/lucide.js',
-  'https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js',
-  'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
-];
+const CACHE = "typing-exam-v2";
+const FILES = ["./", "./index.html"];
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
-  self.clients.claim();
+self.addEventListener("activate", e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
-self.addEventListener('fetch', e => {
+self.addEventListener("fetch", e => {
+  const req = e.request;
+  if (req.method !== "GET" || !req.url.startsWith(self.location.origin)) return;
+
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      return cached || fetch(e.request).then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      });
-    }).catch(() => {
-      if (e.request.destination === 'document') return caches.match('./index.html');
+    // ?2943.play এর মতো query থাকলেও একই cache থেকে দেবে
+    caches.match(req, { ignoreSearch: true }).then(hit => {
+      const net = fetch(req)
+        .then(res => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => hit || caches.match("./index.html", { ignoreSearch: true }));
+      return hit || net;
     })
   );
 });
