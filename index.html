@@ -49,6 +49,7 @@ select,input[type=text],input[type=number]{width:100%;padding:8px;border:1px sol
 #garea .w b{color:var(--ok)}#garea .w.cur{background:#1a7cf622}
 #ginfo{position:absolute;top:8px;left:12px;right:12px;display:flex;justify-content:space-between;font-weight:600;z-index:2}
 #gmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;background:#0004;color:#fff;z-index:3}
+.rl{font-size:12px;opacity:.7;margin-top:4px}.trk{height:10px;background:var(--card);border-radius:6px;position:relative;overflow:hidden}.trk i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:6px;background:var(--ok);transition:width .3s}
 #res{text-align:center;padding:24px}
 #res h2{font-size:54px;margin:0}
 #stars{font-size:46px;color:#f0a800}
@@ -79,12 +80,13 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px so
 </nav>
 
 <div class="wrap">
-  <section id="v-lessons" class="view"><h3>Lessons</h3><div class="grid" id="lgrid"></div></section>
+  <section id="v-lessons" class="view"><h3>Lessons</h3><p id="sline" style="opacity:.8"></p><div class="grid" id="lgrid"></div></section>
 
   <section id="v-custom" class="view hidden">
     <h3>Custom exam</h3>
     <p style="opacity:.7">কিবোর্ডে অক্ষরে ক্লিক করো, অথবা নিচের box-এ লেখো।</p>
     <div class="panel">
+      <div><label>Exam-এর ধরন</label><select id="ttype"><option value="random">Random শব্দ</option><option value="sentence">সম্পূর্ণ বাক্য (Sentence)</option><option value="facts">🧠 মজার ও শিক্ষামূলক তথ্য</option><option value="proverbs">📜 প্রবাদ বাক্য</option><option value="jokes">😂 মজার joke</option><option value="twisters">🌀 Tongue twister</option><option value="custom">নিজের লেখা</option></select></div>
       <div><label>অক্ষর</label><input type="text" id="letters" placeholder="asdfghjkl"></div>
       <div><label>Level</label><select id="level"><option value="random">Random</option><option value="short">Short</option><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="toohard">Too Hard</option></select></div>
       <div><label>শব্দ সংখ্যা</label><input type="number" id="count" value="30" min="5" max="300"></div>
@@ -94,7 +96,8 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px so
       <div><label>গান</label><select id="song"><option value="off">বন্ধ</option><option value="lofi">Lofi</option><option value="chill">Chill</option><option value="fast">Fast beat</option></select></div>
       <div><label>নিজের গান (mp3 link)</label><input type="text" id="songurl" placeholder="https://..."></div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div id="cwrap" class="hidden"><label>নিজের বাক্য বা অনুচ্ছেদ লেখো / paste করো</label><textarea id="ctext" rows="4" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--tx)" placeholder="her name is samiya she reads in class nine"></textarea></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
       <button class="btn" id="start">START TYPING</button>
       <button class="btn ghost" id="all">সব অক্ষর</button>
       <button class="btn ghost" id="home">Home row</button>
@@ -102,20 +105,23 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px so
     </div>
   </section>
 
-  <section id="v-hist" class="view hidden"><h3>History</h3><p id="best"></p><div id="hlist"></div><button class="btn ghost" id="hclr" style="margin-top:10px">History মুছো</button></section>
+  <section id="v-hist" class="view hidden"><h3>History</h3><p id="best"></p><div id="hlist"></div><canvas id="chart" width="860" height="200" style="width:100%;max-width:860px;background:var(--card);border-radius:12px;margin:8px 0"></canvas>
+    <div id="weak" style="margin:8px 0"></div><button class="btn" id="wbtn">🎯 দুর্বল key practice</button>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="exp">⬇ Backup</button><button class="btn ghost" id="imp">⬆ Restore</button><button class="btn ghost" id="hclr">History মুছো</button></div><input type="file" id="impf" accept=".json" class="hidden"></section>
 
   <section id="play" class="hidden">
     <div id="bar"><div>Time <b id="tm">0</b></div><div>WPM <b id="wp">0</b></div><div>Accuracy <b id="ac">100%</b></div><div>Progress <b id="pg">0%</b></div><button class="btn ghost" id="stop" style="margin-left:auto">বন্ধ</button></div>
+    <div id="race" class="hidden"><div class="rl">🏃 তুমি</div><div class="trk"><i id="rme"></i></div><div class="rl">🤖 Bot (<span id="rbw"></span> WPM)</div><div class="trk"><i id="rbot" style="background:#e5484d"></i></div></div>
     <div id="box"><div id="text"></div></div>
-    <div id="garea" class="hidden"><div id="ginfo"><span id="gs">Score 0</span><span id="gt"></span><span id="gl"></span></div><div id="gmsg" class="hidden"></div></div>
+    <div id="garea" class="hidden"><div id="gscr" class="hidden" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center"></div><div id="ginfo"><span id="gs">Score 0</span><span id="gt"></span><span id="gl"></span></div><div id="gmsg" class="hidden"></div></div>
   </section>
 
   <div id="kb" class="hidden"></div>
   <div id="fing"></div>
 
   <section id="res" class="hidden">
-    <div id="stars"></div><h2 id="rw"></h2><p id="rd"></p><p id="rp"></p>
-    <button class="btn" id="again">আবার</button> <button class="btn" id="next">পরের Lesson</button> <button class="btn ghost" id="back">Menu</button>
+    <div id="stars"></div><h2 id="rw"></h2><p id="rd"></p><p id="rp"></p><p id="fact" style="opacity:.75;max-width:520px;margin:8px auto"></p>
+    <button class="btn" id="again">আবার</button> <button class="btn ghost hidden" id="cert">🏆 Certificate</button> <button class="btn" id="next">পরের Lesson</button> <button class="btn ghost" id="back">Menu</button>
   </section>
 </div>
 
@@ -131,16 +137,25 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px so
   <div class="r"><span>পাস WPM</span><input type="number" id="s-gwpm" min="1"></div>
   <div class="r"><span>পাস Accuracy %</span><input type="number" id="s-gacc" min="1" max="100"></div>
   <div class="r"><span>Mini game প্রতি কত শব্দ (0 = বন্ধ)</span><input type="number" id="s-game" min="0"></div>
+  <div class="r"><span>প্রতি Level শেষে game</span><input type="checkbox" id="s-end"></div>
+  <div class="r"><span>Game-এর শব্দ পড়ার গতি</span><select id="s-gspeed"><option value="25">Slow (শুরুর জন্য)</option><option value="45">Normal</option><option value="70">Fast</option></select></div>
   <div class="r"><span>Game সময় (সেকেন্ড)</span><input type="number" id="s-glen" min="5" max="60"></div>
+  <div class="r"><span>তোমার নাম (Certificate)</span><input type="text" id="s-name" style="width:150px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--bg)"></div>
+  <div class="r"><span>🤖 Bot race WPM (0 = বন্ধ)</span><input type="number" id="s-bot" min="0" max="200"></div>
+  <div class="r"><span>দৈনিক লক্ষ্য (exam)</span><input type="number" id="s-daily" min="1" max="50"></div>
+  <div class="r"><span>Game-এর ধরন</span><select id="s-gtype"><option value="mix">Mix</option><option value="fall">শব্দ পড়া</option><option value="scramble">অক্ষর সাজানো 🔀</option></select></div>
   <button class="btn" id="setX" style="margin-top:12px">বন্ধ করো</button>
 </div></div>
 
 <script>
 const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S=Object.assign({sound:true,vol:.8,kb:true,hint:true,mode:"strict",font:34,theme:"light",gwpm:15,gacc:90,game:0,glen:20},LS.get("tx_s",{}));
-let HIST=LS.get("tx_h",[]),PROG=LS.get("tx_p",{});
+const S=Object.assign({sound:true,vol:.8,kb:true,hint:true,mode:"strict",font:34,theme:"light",gwpm:15,gacc:90,game:0,glen:20,gspeed:25,endGame:true,name:"",bot:0,daily:3,gtype:"mix"},LS.get("tx_s",{}));
+let HIST=LS.get("tx_h",[]),PROG=LS.get("tx_p",{}),KS=LS.get("tx_k",{}),DAYC=LS.get("tx_d",{});
 const WORDS=`a an as at be by do go he if in is it me my no of on or so to up us we the and are but can day did for get has her him his how its let may new not now old one our out put say see she too two use was way who why you yes year yard yellow already early require liquid lady joy yield risk sheaf qualify sir quick quiet queen quite quote square quest equal after again also been come could each even find first give good great hand have here high home just keep kind know large last late left life like line little long look made make many more most move much must name need next only open over part place plant point right same school seem show small some sound still such take tell than that them then there these they thing think this those three through time turn under until very want water well were what when where which while will with word work would write about above across against almost along always animal answer around ask asked before began begin being below between black bring build carry change close cold country cover cross dark dream drive during earth enough every example face fall family father feel field fire follow food form found friend girl green ground group grow happy heard heart heavy horse house idea island learn leave letter light listen mother mountain music never night number paper people picture plain power problem question quarter quickly quarrel quality quiz quilt queue rain read river round second sentence should simple sleep spring story strong study summer system table together toward travel visit watch whole window winter without wonder world young yesterday yawn yarn yolk yoga yeast yak jazz jump jelly jacket jungle judge joke jar jet kid king kite knee knife knock lamp land laugh lemon lunch magic market mirror monkey nature needle noise ocean orange pencil pocket pretty rabbit rocket safe salad shadow silver smile snack soccer tiger turtle uncle valley velvet wagon zebra zero flag fish fall dash sad lad ask glass flask shall alas gaff half hall salsa`.split(/\s+/);
+const SENT=`her name is samiya she read in class nine he is good student|the sun rises in the east every morning|i like to read a book after school|my mother cooks rice and fish for lunch|we play cricket in the field every evening|the teacher gave us homework today|birds fly high in the blue sky|please open the window and let the air in|he drinks a glass of water after running|our school starts at eight in the morning|the little girl found a red flower in the garden|rain falls from dark clouds in summer|my father goes to work by bus|she writes a letter to her best friend|the dog sleeps under the old tree|we should help poor people when we can|it is important to speak the truth|the moon looks beautiful tonight|he wants to become a doctor one day|learning to type fast is very useful|the market is full of fresh fruit and vegetables|my brother plays football with his friends|she sings a sweet song in the morning|the river flows slowly through the village|every student must come to class on time|i will call you when i reach home|they walked to the park and sat on a bench|good habits make a good life|the train arrives at the station at noon|we drink tea together in the evening|honest work brings success|the boy is flying a kite on the roof|this book teaches many new things|she keeps her room clean and tidy|time is more valuable than money|the farmer grows rice in his field|a good friend is always there to help|please write your name on the paper|the baby smiles when she sees her mother|we visit our grandmother every holiday|he forgot his bag at school yesterday|the shop opens early and closes late|read every day and your mind will grow|the cat jumps over the small wall|my sister is learning to draw pictures|the stars shine bright in the night sky|they built a new house near the lake|practice makes a person perfect|he always listens to his teacher|the weather is cool and nice today|she bought a new pen from the shop|we must respect our parents and elders|the bus was late because of heavy traffic|ice cream melts quickly in the hot sun|the library is quiet and full of books|he answered the question very quickly|a small step every day leads to big change|she found her lost key under the table|the children are playing happily in the yard|never give up on your dreams`.split('|');
+const FACTS=`honey never spoils and edible honey was found in ancient egyptian tombs|an octopus has three hearts and blue blood|the human brain uses about twenty percent of the body energy|water covers about seventy percent of the surface of the earth|a day on venus is longer than a year on venus|bangladesh is home to the largest mangrove forest in the world|the royal bengal tiger lives in the sundarbans|light from the sun takes about eight minutes to reach the earth|the heart beats about one hundred thousand times every day|bananas are slightly radioactive but completely safe to eat|the eiffel tower grows taller in summer because metal expands in heat|sound cannot travel through empty space|a group of crows is called a murder|the letters on the qwerty keyboard were arranged in eighteen seventy three|the first computer mouse was made of wood|the great wall of china is not visible to the naked eye from space|plants make food from sunlight water and air|a snail can sleep for three years|the moon is slowly moving away from the earth every year|your bones are stronger than steel of the same weight|dolphins sleep with half of their brain awake|the tongue print of every person is unique|rainbows are full circles but we usually see only half|the shortest war in history lasted less than one hour|zero is the only number that cannot be written in roman numerals`.split('|'),PROV=`a stitch in time saves nine|actions speak louder than words|slow and steady wins the race|where there is a will there is a way|the early bird catches the worm|knowledge is power|practice makes a man perfect|all that glitters is not gold|a friend in need is a friend indeed|honesty is the best policy|rome was not built in a day|many hands make light work|better late than never|health is wealth|do not count your chickens before they hatch|look before you leap|a rolling stone gathers no moss|failure is the pillar of success|unity is strength|waste not want not`.split('|'),JOKES=`why did the computer go to the doctor because it had a virus|i told my keyboard a joke but it did not respond it just kept typing|why was the math book sad because it had too many problems|what do you call a sleeping dinosaur a dino snore|why did the student eat his homework because the teacher said it was a piece of cake|how do you make a tissue dance put a little boogie in it|why do bees have sticky hair because they use honeycombs|what did the zero say to the eight nice belt|why was the cat sitting on the computer to keep an eye on the mouse|i would tell you a chemistry joke but i know i would not get a reaction|why did the banana go to the hospital because it was not peeling well|what is a computer favorite snack microchips|why can not a bicycle stand on its own because it is two tired|what do you call a fake noodle an impasta|why did the scarecrow win a prize because he was outstanding in his field`.split('|'),TWIST=`she sells sea shells by the sea shore|peter piper picked a peck of pickled peppers|how much wood would a woodchuck chuck if a woodchuck could chuck wood|red lorry yellow lorry red lorry yellow lorry|a proper copper coffee pot|fuzzy wuzzy was a bear fuzzy wuzzy had no hair|betty botter bought some butter but she said the butter is bitter|i scream you scream we all scream for ice cream|six slippery snails slid slowly seaward|unique new york you know you need unique new york|three free throws through the thick thin thistle|can you can a can as a canner can can a can`.split('|'),TIPS=`টিপস: টাইপ করার সময় কিবোর্ডের দিকে না তাকিয়ে পর্দার দিকে তাকাও।|টিপস: আগে নির্ভুল হও, গতি নিজেই আসবে।|টিপস: প্রতিদিন ১০ মিনিট অনুশীলন করলে এক মাসেই বড় পরিবর্তন দেখবে।|টিপস: কব্জি হালকা রাখো, কিবোর্ডে ভর দিও না।|টিপস: দুই হাতের বুড়ো আঙুল শুধু space এর জন্য।|মজার তথ্য: দ্রুততম টাইপিস্টরা মিনিটে ২০০ শব্দের বেশি লিখতে পারে।|মজার তথ্য: QWERTY কিবোর্ড ১৮৭৩ সালে টাইপরাইটারের জন্য তৈরি হয়েছিল।|টিপস: ভুল হলে থেমে না গিয়ে ছন্দ ধরে রাখো।|টিপস: প্রতি ২০ মিনিট পরপর চোখ আর হাতকে বিশ্রাম দাও।|টিপস: কঠিন key গুলো আলাদা করে বারবার practice করো (History থেকে Weak keys দেখো)।`.split('|');
+const POOLS={sentence:SENT,facts:FACTS,proverbs:PROV,jokes:JOKES,twisters:TWIST};
 const LV={random:[1,12],short:[2,3],easy:[3,4],normal:[4,5],medium:[5,6],hard:[6,8],toohard:[8,14]};
 const LESSONS=["fj","dk","sl","asdfjkl","gh","asdfghjkl","ei","ru","ty","op","qw","vm","bn","cxz","abcdefghijklmnopqrstuvwxyz"].map((l,i)=>({letters:l,level:i==14?"hard":"normal"}));
 LESSONS.splice(10,0,{letters:"qy",level:"normal"}); // Lesson 11: q & y
@@ -154,7 +169,7 @@ let mode="idle",view="lessons",cfg={},lastCfg=null;
 /* ---------- storage / settings ---------- */
 function applyS(){document.body.dataset.theme=S.theme;document.documentElement.style.setProperty("--fs",S.font+"px");$("sndT").textContent=S.sound?"🔊":"🔇";showKb()}
 function saveS(){LS.set("tx_s",S)}
-const SF={"s-sound":["sound","c"],"s-vol":["vol","n"],"s-kb":["kb","c"],"s-hint":["hint","c"],"s-mode":["mode","s"],"s-font":["font","n"],"s-theme":["theme","s"],"s-gwpm":["gwpm","n"],"s-gacc":["gacc","n"],"s-game":["game","n"],"s-glen":["glen","n"]};
+const SF={"s-sound":["sound","c"],"s-vol":["vol","n"],"s-kb":["kb","c"],"s-hint":["hint","c"],"s-mode":["mode","s"],"s-font":["font","n"],"s-theme":["theme","s"],"s-gwpm":["gwpm","n"],"s-gacc":["gacc","n"],"s-game":["game","n"],"s-glen":["glen","n"],"s-end":["endGame","c"],"s-gspeed":["gspeed","n"],"s-name":["name","s"],"s-bot":["bot","n"],"s-daily":["daily","n"],"s-gtype":["gtype","s"]};
 for(const id in SF){const [k,t]=SF[id],el=$(id);if(t=="c")el.checked=S[k];else el.value=S[k];
   el.onchange=el.oninput=()=>{S[k]=t=="c"?el.checked:t=="n"?+el.value:el.value;saveS();applyS()}}
 $("setB").onclick=()=>$("set").classList.remove("hidden");$("setX").onclick=()=>$("set").classList.add("hidden");
@@ -213,41 +228,53 @@ function go(v){openDrawer(false);if(v==="set"){$("set").classList.remove("hidden
   if(v==="lessons")drawLessons();if(v==="hist")drawHist();paint();showKb()}
 $("drawer").onclick=e=>{const v=e.target.dataset.v;v&&go(v)};
 function stars(n){return"★".repeat(n)+"☆".repeat(3-n)}
-function drawLessons(){const g=$("lgrid");g.innerHTML="";LESSONS.forEach((L,i)=>{const d=document.createElement("div");d.className="card";
+function drawLessons(){const g=$("lgrid");g.innerHTML="";$("sline").textContent=dayLine();LESSONS.forEach((L,i)=>{const d=document.createElement("div");d.className="card";
   d.innerHTML=`<b>Lesson ${i+1}</b><br><small>${L.letters.length>10?"সব অক্ষর":[...L.letters].join(" & ")}</small><div class="st">${stars(PROG[i]||0)}</div>`;d.onclick=()=>startLesson(i);g.appendChild(d)})}
-function drawHist(){$("best").textContent=HIST.length?"সেরা: "+Math.max(...HIST.map(h=>h.wpm))+" WPM":"এখনো কোনো exam দেওয়া হয়নি।";
+function drawHist(){drawChart();drawWeak();$("best").textContent=HIST.length?"সেরা: "+Math.max(...HIST.map(h=>h.wpm))+" WPM":"এখনো কোনো exam দেওয়া হয়নি।";
   $("hlist").innerHTML=HIST.length?"<table><tr><th>তারিখ</th><th>Exam</th><th>WPM</th><th>Acc</th><th>★</th></tr>"+HIST.map(h=>`<tr><td>${new Date(h.t).toLocaleDateString()}</td><td>${h.title}</td><td>${h.wpm}</td><td>${h.acc}%</td><td>${h.stars}</td></tr>`).join("")+"</table>":""}
 $("hclr").onclick=()=>{HIST=[];PROG={};LS.set("tx_h",HIST);LS.set("tx_p",PROG);drawHist()};
 
 /* ---------- exam engine ---------- */
 let target="",pos=0,okc=0,errs=0,typed=0,t0=0,tick=0,limit=0,st=[],gameAt=new Set(),gameDone=new Set(),gStart=0;
 const el=i=>$("c"+i);
-function startLesson(i){const L=LESSONS[i];start({title:`Lesson ${i+1}: Practice: ${[...L.letters].join(" & ").slice(0,30)}`,letters:L.letters,level:L.level,count:40,time:0,lesson:i,game:S.game,mode:S.mode,song:"off",songurl:""})}
-function readCustom(){return{title:"Custom: "+([...SEL].join("")||"all"),letters:[...SEL].sort().join(""),level:$("level").value,count:+$("count").value||30,time:+$("time").value||0,game:+$("game").value||0,mode:$("mode").value,song:$("song").value,songurl:$("songurl").value.trim(),lesson:null}}
-$("start").onclick=()=>start(readCustom());
+function startLesson(i){const L=LESSONS[i];start({title:`Lesson ${i+1}: Practice: ${[...L.letters].join(" & ").slice(0,30)}`,letters:L.letters,level:L.level,count:40,time:0,lesson:i,bot:S.bot,game:S.game,mode:S.mode,song:"off",songurl:""})}
+function readCustom(){return{title:"Custom: "+([...SEL].join("")||"all"),letters:[...SEL].sort().join(""),level:$("level").value,count:+$("count").value||30,time:+$("time").value||0,game:+$("game").value||0,mode:$("mode").value,song:$("song").value,songurl:$("songurl").value.trim(),lesson:null,ttype:$("ttype").value,ctext:$("ctext").value}}
+function tglType(){$("cwrap").classList.toggle("hidden",$("ttype").value!=="custom")}
+$("ttype").onchange=tglType;
+function cleanText(t){return t.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/[\u2013\u2014]/g,"-").replace(/\s+/g," ").trim()}
+function makeSent(set,n,p0){let pool=p0||SENT;if(set.length){const f=pool.filter(x=>[...x].every(c=>c===" "||set.includes(c)));if(f.length)pool=f}
+  const out=[];while(out.length<n){const sh=[...pool].sort(()=>Math.random()-.5);if(out.length&&sh[0]===out[out.length-1]&&sh.length>1)sh.push(sh.shift());out.push(...sh)}return out.slice(0,n).join(" ")}
+$("start").onclick=()=>start({...readCustom(),bot:S.bot});
 function start(c){endExam(true);cfg=lastCfg=c;setL(c.letters||"");kb.classList.remove("pick");
-  const set=[...SEL];target=makeWords(set,c.level,c.time?Math.max(300,c.count):c.count);
-  pos=okc=errs=typed=0;t0=0;limit=c.time;st=new Array(target.length).fill(0);gameAt=new Set();gameDone=new Set();
+  const set=[...SEL];
+  if(c.ttype==="custom"){let t=cleanText(c.ctext||"");if(!t){alert("আগে নিজের লেখা দাও");return go("custom")}if(c.time)while(t.length<1500)t+=" "+cleanText(c.ctext);target=t}
+  else if(POOLS[c.ttype])target=makeSent(set,c.time?Math.max(60,c.count):c.count,POOLS[c.ttype]);
+  else target=makeWords(set,c.level,c.time?Math.max(300,c.count):c.count);
+  fin=false;pos=okc=errs=typed=0;t0=0;limit=c.time;st=new Array(target.length).fill(0);gameAt=new Set();gameDone=new Set();
   if(c.game>0){let w=0;for(let i=0;i<target.length;i++)if(target[i]===" "&&++w%c.game===0)gameAt.add(i+1)}
   ["lessons","custom","hist"].forEach(x=>$("v-"+x).classList.add("hidden"));$("res").classList.add("hidden");$("garea").classList.add("hidden");$("box").classList.remove("hidden");
   $("play").classList.remove("hidden");$("ttl").textContent=c.title;mode="exam";
   const t=$("text");t.innerHTML="";for(let i=0;i<target.length;i++){const s=document.createElement("span");s.id="c"+i;s.textContent=target[i];t.appendChild(s)}
-  $("box").scrollTop=0;cls(0);hint();showKb();$("tm").textContent=limit||0;$("wp").textContent=0;$("ac").textContent="100%";$("pg").textContent="0%";
+  $("box").scrollTop=0;cls(0);hint();showKb();$("race").classList.toggle("hidden",!(c.bot>0));$("rbw").textContent=c.bot;$("rme").style.width=$("rbot").style.width="0";$("tm").textContent=limit||0;$("wp").textContent=0;$("ac").textContent="100%";$("pg").textContent="0%";
   if(c.song!=="off"||c.songurl)musicStart(c.song,c.songurl)}
 function cls(i){const e=el(i);if(!e)return;e.className=i===pos?"cur":st[i]===1?"ok":st[i]===2?"bad":""}
-function hint(){paint();const n=target[pos];if(n&&keys[n]){keys[n].classList.add("next");$("fing").textContent=`পরের key: ${n===" "?"space":n} — ${finger[n]}`}
+function hint(){paint();const n=target[pos],kn=n&&n.toLowerCase();if(n&&keys[kn]){keys[kn].classList.add("next");$("fing").textContent=`পরের key: ${n===" "?"space":n}${n!==kn?" (Shift সহ)":""} — ${finger[kn]}`}
   const e=el(pos);if(e)$("box").scrollTop=Math.max(0,e.offsetTop-S.font*2.1)}
 function stats(){const m=(Date.now()-t0)/60000||1e-9;return{wpm:t0?Math.round(okc/5/m):0,acc:typed?Math.max(0,Math.round((typed-errs)/typed*100)):100}}
-function loop(){if(mode!=="exam")return;const {wpm,acc}=stats();$("wp").textContent=wpm;$("ac").textContent=acc+"%";$("pg").textContent=Math.round(pos/target.length*100)+"%";
+function loop(){if(mode!=="exam")return;const {wpm,acc}=stats();$("wp").textContent=wpm;$("ac").textContent=acc+"%";$("pg").textContent=Math.round(pos/target.length*100)+"%";if(cfg.bot>0){const m=(Date.now()-t0)/60000;$("rme").style.width=pos/target.length*100+"%";$("rbot").style.width=Math.min(100,m*cfg.bot*5/target.length*100)+"%"}
   const sec=Math.floor((Date.now()-t0)/1000);if(limit){const l=Math.max(0,limit-sec);$("tm").textContent=l;if(l<=0)finish()}else $("tm").textContent=sec}
 function endExam(silent){clearInterval(tick);if(G){cancelAnimationFrame(G.raf);G=null}mode="idle";if(silent)musicStop()}
-function finish(){if(mode!=="exam"&&mode!=="game")return;const {wpm,acc}=stats();endExam();
+let fin=false,R=null;
+function finish(){if(fin||(mode!=="exam"&&mode!=="game"))return;fin=true;const {wpm,acc}=stats();endExam();
   let n=0;if(wpm>=S.gwpm&&acc>=S.gacc){n=1;if(wpm>=S.gwpm*1.5)n=2;if(wpm>=S.gwpm*2&&acc>=97)n=3}
-  const pass=n>0;if(cfg.lesson!=null&&n>(PROG[cfg.lesson]||0)){PROG[cfg.lesson]=n;LS.set("tx_p",PROG)}
+  R={wpm,acc,n,errs,okc,race:cfg.bot>0?raceTxt():""};bumpDay();LS.set("tx_k",KS);if(cfg.lesson!=null&&n>(PROG[cfg.lesson]||0)){PROG[cfg.lesson]=n;LS.set("tx_p",PROG)}
   HIST.unshift({t:Date.now(),title:cfg.title,wpm,acc,stars:n});HIST=HIST.slice(0,40);LS.set("tx_h",HIST);
+  if(S.endGame){$("play").classList.remove("hidden");showKb();startGame(showRes)}else showRes()}
+function showRes(){const {wpm,acc,n,errs,okc}=R,pass=n>0;mode="idle";
   $("play").classList.add("hidden");$("res").classList.remove("hidden");showKb();
-  $("stars").textContent=stars(n);$("rw").textContent=wpm+" WPM";$("rd").textContent=`Accuracy ${acc}% · ভুল ${errs} · সঠিক অক্ষর ${okc}`;
+  $("stars").textContent=stars(n);$("rw").textContent=wpm+" WPM";$("rd").textContent=`${rankOf(wpm)} · Accuracy ${acc}% · ভুল ${errs} · সঠিক অক্ষর ${okc}`;
   $("rp").textContent=pass?"✅ পাস!":`❌ পাস করতে ${S.gwpm} WPM ও ${S.gacc}% Accuracy লাগবে।`;
+  $("rp").textContent+=R.race?" "+R.race:"";$("fact").textContent=rnd(TIPS);$("cert").classList.toggle("hidden",!pass);
   $("next").classList.toggle("hidden",!(pass&&cfg.lesson!=null&&cfg.lesson+1<LESSONS.length));if(pass)sfx("win");musicStop()}
 $("again").onclick=()=>start(lastCfg);$("rst").onclick=()=>lastCfg&&start(lastCfg);$("stop").onclick=()=>{if(t0)finish();else go("lessons")};
 $("next").onclick=()=>startLesson(cfg.lesson+1);$("back").onclick=()=>go(cfg.lesson!=null?"lessons":"custom");
@@ -255,13 +282,15 @@ $("next").onclick=()=>startLesson(cfg.lesson+1);$("back").onclick=()=>go(cfg.les
 document.addEventListener("keydown",e=>{
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   if(mode==="game")return gKey(e);
+  if(mode==="pause"){e.preventDefault();t0+=Date.now()-gStart;mode="exam";hint();return}
   if(mode!=="exam")return;
+  if(e.key==="Escape"&&t0){gStart=Date.now();mode="pause";$("fing").textContent="⏸ Pause — যেকোনো key চাপলে আবার শুরু";return}
   if(e.key==="Backspace"){e.preventDefault();if(cfg.mode==="free"&&pos>0){const o=pos;pos--;if(st[pos]===1)okc--;st[pos]=0;cls(o);cls(pos);hint()}sfx("back");return}
   if(e.key.length!==1)return;e.preventDefault();
   if(!t0){t0=Date.now();tick=setInterval(loop,300)}
   const k=keys[e.key.toLowerCase()];if(k){k.classList.add("hit");setTimeout(()=>k.classList.remove("hit"),90)}
-  typed++;
-  if(e.key===target[pos]){st[pos]=1;okc++;const o=pos++;cls(o);sfx("ok")}
+  typed++;const tc=(target[pos]||"").toLowerCase(),good=e.key===target[pos];if(/[a-z]/.test(tc)){(KS[tc]=KS[tc]||[0,0])[0]++;if(!good)KS[tc][1]++}
+  if(good){st[pos]=1;okc++;const o=pos++;cls(o);sfx("ok")}
   else{errs++;sfx("bad");const c=el(pos);if(cfg.mode==="free"){st[pos]=2;const o=pos++;cls(o)}else if(c){c.classList.add("bad");setTimeout(()=>c.classList.remove("bad"),180);return}}
   if(pos>=target.length)return finish();
   cls(pos);hint();
@@ -269,39 +298,71 @@ document.addEventListener("keydown",e=>{
 
 /* ---------- mini game: falling words ---------- */
 let G=null;
-function startGame(){mode="game";gStart=Date.now();const area=$("garea");$("box").classList.add("hidden");area.classList.remove("hidden");
+function startGame(cb){mode="game";gStart=Date.now();const area=$("garea");$("box").classList.add("hidden");area.classList.remove("hidden");
   area.querySelectorAll(".w").forEach(n=>n.remove());$("gmsg").classList.add("hidden");$("fing").textContent="🎮 শব্দ নিচে পড়ার আগে টাইপ করো! (Esc = বাদ দাও)";
-  const set=[...SEL];G={list:makeWords(set,cfg.level==="random"?"short":cfg.level,80).split(" "),ws:[],score:0,lives:3,end:Date.now()+S.glen*1000,cur:null,last:performance.now(),spawn:0,idx:0,raf:0};
+  const set=[...SEL],tw=(cfg.ttype&&cfg.ttype!=="random")?[...new Set(target.toLowerCase().replace(/[^a-z ]/g," ").split(" ").filter(w=>w.length>1))].sort(()=>Math.random()-.5):null;G={list:(tw&&tw.length>2)?tw:makeWords(set,cfg.level==="random"?"short":cfg.level,80).split(" "),ws:[],score:0,lives:3,end:Date.now()+S.glen*1000,cur:null,last:performance.now(),spawn:0,idx:0,raf:0,cb:cb};
+  G.type=S.gtype==="mix"?(Math.random()<.5?"scr":"fall"):S.gtype==="scramble"?"scr":"fall";$("gscr").classList.toggle("hidden",G.type!=="scr");
+  if(G.type==="scr"){G.pool=G.list.filter(w=>w.length>=4&&w.length<=8);if(G.pool.length<3)G.pool=G.list;scrNext();$("fing").textContent="🔀 অক্ষর সাজিয়ে সঠিক শব্দটা টাইপ করো! (Esc = বাদ দাও)"}
   G.raf=requestAnimationFrame(gLoop)}
+function scrNext(){const w=rnd(G.pool);let a=[...w];for(let i=0;i<20&&a.join("")===w;i++)a.sort(()=>Math.random()-.5);G.w=w;G.n=0;G.sc=a.join(" ");scrDraw()}
+function scrDraw(){$("gscr").innerHTML=`<div style="font-size:42px;letter-spacing:6px">${G.sc.toUpperCase()}</div><div style="font-size:30px;margin-top:14px;font-family:monospace"><b style="color:var(--ok)">${G.w.slice(0,G.n)}</b>${"_".repeat(G.w.length-G.n)}</div>`}
 function gUpd(w){w.el.innerHTML=`<b>${w.txt.slice(0,w.n)}</b>${w.txt.slice(w.n)}`;w.el.classList.toggle("cur",w===G.cur)}
 function gKill(w){w.el.remove();G.ws=G.ws.filter(x=>x!==w);if(G.cur===w)G.cur=null}
 function gLoop(now){if(!G)return;const dt=(now-G.last)/1000;G.last=now;const area=$("garea"),H=area.clientHeight,W=area.clientWidth;
-  G.spawn-=dt;if(G.spawn<=0){G.spawn=1.5;const t=G.list[G.idx++%G.list.length],e=document.createElement("div");e.className="w";area.appendChild(e);
+  if(G.type==="scr"){const l=Math.max(0,Math.ceil((G.end-Date.now())/1000));$("gs").textContent="Score "+G.score;$("gt").textContent="⏱ "+l;$("gl").textContent="";if(l<=0)return gEnd();G.raf=requestAnimationFrame(gLoop);return}
+  G.spawn-=dt;if(G.spawn<=0){G.spawn=Math.max(1.1,70/S.gspeed);const t=G.list[G.idx++%G.list.length],e=document.createElement("div");e.className="w";area.appendChild(e);
     const w={txt:t,n:0,el:e,y:30,x:Math.random()*Math.max(10,W-t.length*16-50)+8};e.style.left=w.x+"px";G.ws.push(w);gUpd(w)}
-  G.ws.slice().forEach(w=>{w.y+=dt*(45+G.score*.6);w.el.style.top=w.y+"px";if(w.y>H-38){gKill(w);G.lives--;sfx("bad")}});
+  G.ws.slice().forEach(w=>{w.y+=dt*(S.gspeed+G.score*.2);w.el.style.top=w.y+"px";if(w.y>H-38){gKill(w);G.lives--;sfx("bad")}});
   const left=Math.max(0,Math.ceil((G.end-Date.now())/1000));$("gs").textContent="Score "+G.score;$("gt").textContent="⏱ "+left;$("gl").textContent="❤".repeat(Math.max(0,G.lives));
   if(left<=0||G.lives<=0)return gEnd();G.raf=requestAnimationFrame(gLoop)}
 function gKey(e){if(!G)return;if(e.key==="Escape"){return gEnd(true)}if(e.key.length!==1||e.key===" ")return;e.preventDefault();
   const k=keys[e.key.toLowerCase()];if(k){k.classList.add("hit");setTimeout(()=>k.classList.remove("hit"),90)}
+  if(G.type==="scr"){if(e.key===G.w[G.n]){G.n++;sfx("ok");if(G.n>=G.w.length){G.score+=G.w.length;sfx("pop");scrNext()}else scrDraw()}else sfx("bad");return}
   let w=G.cur;if(!w){const c=G.ws.filter(x=>x.txt[0]===e.key).sort((a,b)=>b.y-a.y);w=c[0];if(w){G.cur=w}}
   if(w&&w.txt[w.n]===e.key){w.n++;sfx("ok");gUpd(w);if(w.n>=w.txt.length){G.score+=w.txt.length;sfx("pop");gKill(w)}}else sfx("bad")}
-function gEnd(skip){if(!G)return;cancelAnimationFrame(G.raf);const sc=G.score;G=null;const m=$("gmsg");
-  const back=()=>{$("garea").classList.add("hidden");$("box").classList.remove("hidden");if(t0)t0+=Date.now()-gStart;mode="exam";cls(pos);hint()};
+function gEnd(skip){if(!G)return;cancelAnimationFrame(G.raf);const sc=G.score,cb=G.cb;G=null;const m=$("gmsg");
+  const back=()=>{$("garea").classList.add("hidden");$("gscr").classList.add("hidden");$("box").classList.remove("hidden");if(cb)return cb();if(t0)t0+=Date.now()-gStart;mode="exam";cls(pos);hint()};
   if(skip===true)return back();m.textContent=`গেম শেষ! Score ${sc} 🎉`;m.classList.remove("hidden");sfx("win");mode="wait";setTimeout(back,1600)}
 
+/* ---------- stats, streak, chart, certificate, backup ---------- */
+const today=()=>new Date().toLocaleDateString("en-CA");
+function bumpDay(){const d=today();DAYC[d]=(DAYC[d]||0)+1;LS.set("tx_d",DAYC)}
+function dayLine(){let d=new Date(),n=0;if(!DAYC[today()])d.setDate(d.getDate()-1);
+  while(DAYC[d.toLocaleDateString("en-CA")]>0){n++;d.setDate(d.getDate()-1)}
+  const t=DAYC[today()]||0;return `🔥 ${n} দিনের streak · আজ ${t}/${S.daily} exam${t>=S.daily?" ✅ লক্ষ্য পূরণ!":""}`}
+function rankOf(w){return w<10?"🐢 কচ্ছপ":w<20?"🚶 হাঁটার গতি":w<35?"🚴 সাইকেল":w<50?"🚗 গাড়ি":w<70?"🚄 ট্রেন":"🚀 রকেট"}
+function raceTxt(){const m=(Date.now()-t0)/60000,b=Math.min(1,m*cfg.bot*5/target.length);return pos/target.length>=b?"🏁 তুমি Bot-কে হারিয়েছ!":"🤖 Bot জিতেছে, আবার চেষ্টা করো!"}
+function weak(){return Object.entries(KS).filter(([c,v])=>v[0]>=8&&v[1]>0).sort((a,b)=>b[1][1]/b[1][0]-a[1][1]/a[1][0]).slice(0,6)}
+function drawWeak(){const w=weak();$("weak").innerHTML=w.length?"<b>দুর্বল key:</b> "+w.map(([c,v])=>`<span style="display:inline-block;margin:3px;padding:4px 10px;border-radius:8px;background:var(--card)"><b>${c}</b> ${Math.round(v[1]/v[0]*100)}% ভুল</span>`).join(""):"কিছু exam দিলে এখানে তোমার দুর্বল key দেখাবে।"}
+$("wbtn").onclick=()=>{const w=weak();if(w.length<2)return alert("আগে আরও কিছু exam দাও");start({title:"Weak keys practice",letters:w.map(x=>x[0]).join(""),level:"normal",count:40,time:0,lesson:null,bot:S.bot,game:S.game,mode:S.mode,song:"off",songurl:"",ttype:"random"})};
+function drawChart(){const cv=$("chart"),x=cv.getContext("2d"),d=HIST.slice(0,20).reverse().map(h=>h.wpm),W=cv.width,H=cv.height;x.clearRect(0,0,W,H);x.fillStyle=getComputedStyle(document.body).color;x.font="13px sans-serif";
+  if(d.length<2){x.fillText("chart দেখতে অন্তত ২টা exam দাও",14,24);return}
+  const mx=Math.max(...d,10),P=(v,i)=>[30+i*(W-50)/(d.length-1),H-28-(v/mx)*(H-55)];x.strokeStyle="#1a7cf6";x.lineWidth=3;x.beginPath();d.forEach((v,i)=>{const [a,b]=P(v,i);i?x.lineTo(a,b):x.moveTo(a,b)});x.stroke();
+  d.forEach((v,i)=>{const [a,b]=P(v,i);x.beginPath();x.arc(a,b,4,0,7);x.fill()});x.fillText(mx+" WPM",4,16);x.fillText("শেষ "+d.length+"টা exam",W-110,H-8)}
+$("cert").onclick=()=>{if(!S.name){const n=prompt("Certificate-এ কী নাম লিখব?");if(!n)return;S.name=n;$("s-name").value=n;saveS()}
+  const c=document.createElement("canvas");c.width=1000;c.height=700;const x=c.getContext("2d");x.fillStyle="#fffdf5";x.fillRect(0,0,1000,700);x.strokeStyle="#c9a227";x.lineWidth=14;x.strokeRect(25,25,950,650);x.strokeStyle="#1a7cf6";x.lineWidth=3;x.strokeRect(50,50,900,600);
+  x.textAlign="center";x.fillStyle="#222";x.font="bold 52px Georgia,serif";x.fillText("Certificate of Typing",500,160);x.font="26px Georgia,serif";x.fillText("This certificate is proudly awarded to",500,235);
+  x.font="bold 62px Georgia,serif";x.fillStyle="#1a7cf6";x.fillText(S.name,500,330);x.fillStyle="#222";x.font="28px Georgia,serif";x.fillText(`for typing at ${R.wpm} WPM with ${R.acc}% accuracy`,500,410);x.fillText(cfg.title.replace(/[^\x20-\x7E]/g,"").trim()||"Typing Exam",500,455);
+  x.font="64px serif";x.fillStyle="#f0a800";x.fillText("★".repeat(R.n)+"☆".repeat(3-R.n),500,555);x.fillStyle="#555";x.font="20px Georgia,serif";x.fillText(new Date().toLocaleDateString(),500,620);
+  const a=document.createElement("a");a.download="typing-certificate.png";a.href=c.toDataURL("image/png");a.click()};
+$("exp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({S,HIST,PROG,KS,DAYC})],{type:"application/json"}));a.download="typing-backup.json";a.click()};
+$("imp").onclick=()=>$("impf").click();
+$("impf").onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);LS.set("tx_s",d.S||{});LS.set("tx_h",d.HIST||[]);LS.set("tx_p",d.PROG||{});LS.set("tx_k",d.KS||{});LS.set("tx_d",d.DAYC||{});location.href=location.pathname}catch(x){alert("ফাইলটা ঠিক নেই")}})};
+
 /* ---------- link params ---------- */
-const KEYS=["letters","level","count","time","game","mode","song","songurl"];
+const KEYS=["bot","ttype","letters","level","count","time","game","mode","song","songurl"];
 $("shr").onclick=()=>{const c=(mode==="idle"&&view==="custom")?readCustom():(lastCfg||readCustom());const u=new URL(location.href);u.search="";
-  if(c.lesson!=null)u.searchParams.set("lesson",c.lesson+1);else KEYS.forEach(k=>c[k]!==undefined&&c[k]!==""&&u.searchParams.set(k,c[k]));
+  if(c.lesson!=null)u.searchParams.set("lesson",c.lesson+1);else {KEYS.forEach(k=>c[k]!==undefined&&c[k]!==""&&u.searchParams.set(k,c[k]));if(c.ttype==="custom"&&c.ctext)u.searchParams.set("text",c.ctext)}
   try{navigator.clipboard.writeText(u.toString())}catch(e){}prompt("এই link খুললেই সরাসরি exam শুরু হবে:",u.toString())};
 function route(){const q=location.search.slice(1);if(!q)return go("lessons");
   const p=new URLSearchParams(q),first=decodeURIComponent(q.split("&")[0]);let c={};
   if(!first.includes("=")&&PRESETS[first])c={...PRESETS[first]};
   for(const [k,v] of p)if(v!=="")c[k]=v;
   if(p.has("lesson")){const i=Math.min(LESSONS.length,Math.max(1,+p.get("lesson")||1))-1;go("lessons");return startLesson(i)}
-  if(c.letters!==undefined||PRESETS[first]){go("custom");setL(c.letters||"");
-    ["level","count","time","game","mode","song","songurl"].forEach(k=>{if(c[k]!==undefined&&$(k))$(k).value=c[k]});
-    if(p.get("auto")!=="0")start({...readCustom(),title:c.title||"Practice: "+([...SEL].join(" & ")||"all")})}
+  if(c.letters!==undefined||c.ttype||c.text||PRESETS[first]){go("custom");setL(c.letters||"");
+    if(c.text)$("ctext").value=c.text;
+    ["ttype","level","count","time","game","mode","song","songurl"].forEach(k=>{if(c[k]!==undefined&&$(k))$(k).value=c[k]});
+    tglType();if(p.get("auto")!=="0")start({...readCustom(),bot:c.bot!==undefined?+c.bot:S.bot,title:c.title||"Practice: "+([...SEL].join(" & ")||"all")})}
   else go("lessons")}
 applyS();$("game").value=S.game;$("mode").value=S.mode;musicStop();drawLessons();paint();route();
 if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
